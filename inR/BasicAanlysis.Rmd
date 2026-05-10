@@ -5,6 +5,8 @@ date: "`r Sys.Date()`"
 output: pdf_document
 ---
 
+# Basic Analysis
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
@@ -34,6 +36,12 @@ team_season_stats <- readRDS(
     '/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/Current/team_season_stats_updated.rds')
 player_season_stats <- readRDS(
     '/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/Current/player_season_stats_updated.rds')
+```
+
+## Team Analysis & Visualizations
+
+```{r}
+
 ```
 
 Applying a function I wrote that fixes some aesthetic issues with player names. This will occur with foreign players that have special characters or foreign characters in their name.

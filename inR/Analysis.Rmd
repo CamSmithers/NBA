@@ -1,5 +1,5 @@
 ---
-title: "Basic Analysis"
+title: "Analysis"
 author: "Cam Smithers"
 date: "`r Sys.Date()`"
 output: pdf_document
@@ -38,12 +38,6 @@ player_season_stats <- readRDS(
     '/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/Current/player_season_stats_updated.rds')
 ```
 
-## Team Analysis & Visualizations
-
-```{r}
-
-```
-
 Applying a function I wrote that fixes some aesthetic issues with player names. This will occur with foreign players that have special characters or foreign characters in their name.
 
 ```{r}
@@ -52,6 +46,39 @@ player_season_stats <- fixplayername(player_season_stats)
 ```
 
 ### Outcomes and Small Metrics
+
+#### Outcome
+
+I'm adding the points from the opposing team so I can create an outcome variable based on the margin of the outcome. This will be multinomial regression with four different classifications. Those are...
+
+1.  Win by 11+
+2.  Win by 1 to 10
+3.  Lose by 1 to 10
+4.  Lose by 11+
+
+```{r}
+opponent_stats <- team_box_scores %>%
+    select(gamedate, team, pts) %>%
+    rename('opp_pts'='pts')
+
+team_box_scores <- team_box_scores %>%
+    left_join(opponent_stats, by = c('gamedate', 'opponent'='team'))
+```
+
+```{r}
+team_box_scores <- team_box_scores %>%
+    mutate(
+        win = ifelse(offrating > defrating, 1, 0), #game outcome (binary)
+        ptsdiff = pts - opp_pts,
+        threeleveloc = case_when(
+            ptsdiff %in% 1:10 ~ 0,
+            ptsdiff >= 11 ~ 1,
+            TRUE ~ 2),
+        fourlevelloc = case_when(
+            ptsdiff 
+        )
+    )
+```
 
 I want to look at how missing a player affects the chance of a team to win a game; however, I have to determine which players are important for the outcome of the game. I'm going to look at few metrics and use those to determine a player's significance. For the different metrics, different players may end up being the most important player. Those metrics include...
 
@@ -70,6 +97,6 @@ Joining the data from the best player by a certain metric data sets to later det
 ```{r}
 team_box_scores_2 <- team_box_scores %>%
     left_join(bp_by_ws, by = c('team', 'season'='year')) %>%
-    left_join(bp_by_vorp, by = c('team', 'season'='year')) %>%
-    left_join(bp_by_per, by = c('team', 'season'='year'))
+    left_join(bp_by_vorp, by = c('team', 'season'='year', 'name')) %>%
+    left_join(bp_by_per, by = c('team', 'season'='year', 'name'))
 ```

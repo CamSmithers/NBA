@@ -2,10 +2,12 @@
 title: "Analysis"
 author: "Cam Smithers"
 date: "`r Sys.Date()`"
-output: pdf_document
+output: 
+  pdf_document: 
+    fig_height: 5
 ---
 
-# Basic Analysis
+# Analysis
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -51,11 +53,6 @@ player_season_stats <- fixplayername(player_season_stats)
 
 I'm adding the points from the opposing team so I can create an outcome variable based on the margin of the outcome. This will be multinomial regression with four different classifications. Those are...
 
-1.  Win by 11+
-2.  Win by 1 to 10
-3.  Lose by 1 to 10
-4.  Lose by 11+
-
 ```{r}
 opponent_stats <- team_box_scores %>%
     select(gamedate, team, pts) %>%
@@ -68,16 +65,63 @@ team_box_scores <- team_box_scores %>%
 ```{r}
 team_box_scores <- team_box_scores %>%
     mutate(
-        win = ifelse(offrating > defrating, 1, 0), #game outcome (binary)
         ptsdiff = pts - opp_pts,
+        twoleveloc = ifelse(offrating > defrating, 1, 0),
         threeleveloc = case_when(
-            ptsdiff %in% 1:10 ~ 0,
-            ptsdiff >= 11 ~ 1,
-            TRUE ~ 2),
-        fourlevelloc = case_when(
-            ptsdiff 
-        )
-    )
+            ptsdiff >= 11 ~ 2,
+            ptsdiff %in% 1:10 ~ 1,
+            TRUE ~ 0),
+        fourleveloc = case_when(
+            ptsdiff <= -11 ~ 0,
+            ptsdiff %in% -1:-10 ~ 1,
+            ptsdiff %in% 1:10 ~ 2,
+            ptsdiff >= 11 ~ 3)) %>%
+    mutate(
+        twoleveloc = factor(twoleveloc,
+                            levels = c(0, 1),
+                            labels = c('Loss', 'Win')),
+        threeleveloc = factor(threeleveloc,
+                              levels = c(0, 1, 2),
+                              labels = c('Loss', 'Basic Win', 'Blowout Win')),
+        fourleveloc = factor(fourleveloc,
+                              levels = c(0, 1, 2, 3),
+                              labels = c('Blowout Loss', 'Basic Loss', 'Basic Win', 'Blowout Win')))
+```
+
+### Outcome Visualizations
+
+#### Plot 1: Wins vs. Losses
+
+```{r, fig.align='left'}
+plot1 <- ggplot(team_box_scores,
+                aes(x=twoleveloc,
+                    fill=twoleveloc)) + 
+    geom_bar(position='dodge', color='black') + 
+    labs(
+        title='Wins vs. Losses from 2021 to 2025',
+        x='Win & Loss Count',
+        y='Count',
+        fill='Win vs. Loss') +
+    facet_wrap(~team) + 
+    theme_bw()
+plot1
+```
+
+#### Plot 2: 4 Level Outcome Variable
+
+```{r, fig.align='left'}
+plot2 <- ggplot(team_box_scores,
+                aes(x=fourleveloc,
+                    fill=fourleveloc)) + 
+    geom_bar(position='dodge', color='black') + 
+    labs(
+        title='Magnitude of Wins vs. Losses from 2021 to 2025',
+        x='Win & Loss Count',
+        y='Count',
+        fill='Win vs. Loss Magnitude') +
+    facet_wrap(~team) + 
+    theme_bw()
+plot2
 ```
 
 I want to look at how missing a player affects the chance of a team to win a game; however, I have to determine which players are important for the outcome of the game. I'm going to look at few metrics and use those to determine a player's significance. For the different metrics, different players may end up being the most important player. Those metrics include...
@@ -100,3 +144,5 @@ team_box_scores_2 <- team_box_scores %>%
     left_join(bp_by_vorp, by = c('team', 'season'='year', 'name')) %>%
     left_join(bp_by_per, by = c('team', 'season'='year', 'name'))
 ```
+
+Things needed to create this conditional outcome variable or variables...

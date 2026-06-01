@@ -40,6 +40,17 @@ player_season_stats <- readRDS(
     '/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/Current/player_season_stats_updated.rds')
 ```
 
+```{r}
+write_csv(team_box_scores,
+          '/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/Current/tbs.csv')
+write_csv(player_box_scores,
+          '/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/Current/pbs.csv')
+write_csv(team_season_stats,
+          '/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/Current/tss.csv')
+write_csv(player_season_stats,
+          '/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/Current/pss.csv')
+```
+
 Applying a function I wrote that fixes some aesthetic issues with player names. This will occur with foreign players that have special characters or foreign characters in their name.
 
 ```{r}

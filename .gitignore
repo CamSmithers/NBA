@@ -1,5 +1,6 @@
 Documentation-NBA/
 Data-NBA/
 Archive/
+dashboard/*.csv
 .DS_Store
 .Rhistory

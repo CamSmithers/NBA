@@ -19,7 +19,7 @@ I'm creating this dashboard to have an interactive tool, where I can enter data 
 ## Data Display
 General
 - [x] I want have the dataset I'm using displayed, this will enable me to look at it on the fly if I wish.
-- [ ] I want to be able to filter the dataset for specific observations to help me make decision.
+- [x] I want to be able to filter the dataset for specific observations to help me make decision.
 - [ ] Only view specific columns, that could be important for a specific match-up.
 
 ## Graphs

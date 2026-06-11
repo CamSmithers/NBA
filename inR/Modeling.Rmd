@@ -25,16 +25,16 @@ library(nnet)
 Necessary Data Sets
 
 ```{r}
-source("/Users/camsmithers/Desktop/Camalytics/NBA/inR/Functions.R")
+source("inR/Functions.R")
 
 team_season_stats <- readRDS(
-    "/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/team_season_stats.rds")
+    "Data-NBA/team_season_stats.rds")
 
 player_regseason_stats <- readRDS(
-    "/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/plyr_regsn_stats.rds")
+    "Data-NBA/plyr_regsn_stats.rds")
 
 team_box_scores <- readRDS(
-    "/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/team_box_scores_updated.rds")
+    "Data-NBA/team_box_scores_updated.rds")
 ```
 
 ## Pre-Analysis Cleaning

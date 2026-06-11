@@ -1,3 +1,4 @@
+library(tidyverse)
 #Function Script
 fixplayername <- function(dataset) {
     dataset %>%

@@ -1,6 +1,7 @@
 library(tidyverse)
-source("/Users/camsmithers/Desktop/Camalytics/NBA/inR/DataPrep.R")
-source("/Users/camsmithers/Desktop/Camalytics/NBA/inR/Functions.R")
+setwd('/Users/camsmithers/Desktop/Camalytics/NBA')
+source("inR/DataPrep.R")
+source("inR/Functions.R")
 #----------------------------------------------------------------------------#
 #Team Season Statistics
 misc_stats_2 <- misc_stats %>%
@@ -123,10 +124,10 @@ team_box_scores <- basic_box_team %>%
         gamedate >= as.Date("2024-10-15") & 
             gamedate <= as.Date("2025-07-01") ~ 2025))
 
-saveRDS(
-    team_season_stats,
-    file = 
-    "/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/Original-2024/team_season_stats_fixed.rds")
+#saveRDS(
+#    team_season_stats,
+#    file = 
+#    "/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/Original-2024/team_season_stats_fixed.rds")
 #saveRDS(
 #    team_box_scores, 
 #    file = 

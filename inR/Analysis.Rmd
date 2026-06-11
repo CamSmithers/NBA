@@ -11,6 +11,7 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+#knitr::opts_knit$set(root.dir = '/Users/camsmithers/Desktop/Camalytics/NBA')
 ```
 
 ### Packages
@@ -23,7 +24,8 @@ library(tidyverse)
 ### Functions Script
 
 ```{r}
-source('/Users/camsmithers/Desktop/Camalytics/NBA/inR/Functions.R')
+setwd('/Users/camsmithers/Desktop/Camalytics/NBA')
+source('inR/Functions.R')
 ```
 
 ### Data Sets
@@ -31,14 +33,15 @@ source('/Users/camsmithers/Desktop/Camalytics/NBA/inR/Functions.R')
 Loading in the data sets that I'll need for analysis.
 
 ```{r}
+setwd('/Users/camsmithers/Desktop/Camalytics/NBA')
 team_box_scores <- readRDS(
-    '/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/Current/team_box_scores_updated.rds')
+    'Data-NBA/Current/team_box_scores_updated.rds')
 player_box_scores <- readRDS(
-    '/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/Current/full_box_player_updated.rds')
+    'Data-NBA/Current/full_box_player_updated.rds')
 team_season_stats <- readRDS(
-    '/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/Current/team_season_stats_updated.rds')
+    'Data-NBA/Current/team_season_stats_updated.rds')
 player_season_stats <- readRDS(
-    '/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/Current/player_season_stats_updated.rds')
+    'Data-NBA/Current/player_season_stats_updated.rds')
 ```
 
 Applying a function I wrote that fixes some aesthetic issues with player names. This will occur with foreign players that have special characters or foreign characters in their name.
@@ -150,6 +153,8 @@ player_box_scores_2 <- player_box_scores %>%
 
 After creating the data sets necessary to determine whether a team's best player (by a given metric) was available I can now create an outcome variable to check for it.
 
+Note: *I know I don't have to use multiple mutate functions; however, at times I like to use multiple as it helps me organize my code as I'm writing it.*
+
 ```{r}
 team_box_scores_3 <- team_box_scores_2 %>%
     mutate(
@@ -174,7 +179,20 @@ team_box_scores_3 <- team_box_scores_2 %>%
             twoleveloc == 'Loss' & per_bpa == 0 ~ 0,
             twoleveloc == 'Loss' & per_bpa == 1 ~ 1,
             twoleveloc == 'Win' & per_bpa == 0 ~ 2,
-            twoleveloc == 'Win' & per_bpa == 1 ~ 3))
+            twoleveloc == 'Win' & per_bpa == 1 ~ 3)) %>%
+    mutate(
+        ws_bpa_multi = factor(ws_bpa_multi,
+                              levels = c(0, 1, 2, 3),
+                              labels = c('Loss Without', 'Loss With',
+                                         'Win Without', 'Win With')),
+        vorp_bpa_multi = factor(vorp_bpa_multi,
+                                levels = c(0, 1, 2, 3),
+                                labels = c('Loss Without', 'Loss With',
+                                           'Win Without', 'Win With')),
+        per_bpa_multi = factor(per_bpa_multi,
+                               levels = c(0, 1, 2, 3),
+                               labels = c('Loss Without', 'Loss With',
+                                          'Win Without', 'Win With')))
 ```
 
 ### Summary Data
@@ -190,38 +208,9 @@ team_box_summary <- team_box_scores_3 %>%
         avg_defrating = round(mean(defrating, na.rm=TRUE), 1))
 ```
 
-### Outcome Visualizations
+### Data Export for Visualizations
 
-#### Plot 1: Wins vs. Losses
-
-```{r, fig.align='left'}
-plot1 <- ggplot(team_box_scores,
-                aes(x=twoleveloc,
-                    fill=twoleveloc)) + 
-    geom_bar(position='dodge', color='black') + 
-    labs(
-        title='Wins vs. Losses from 2021 to 2025',
-        x='Win & Loss Count',
-        y='Count',
-        fill='Win vs. Loss') +
-    facet_wrap(~team) + 
-    theme_bw()
-plot1
-```
-
-#### Plot 2: 4 Level Outcome Variable
-
-```{r, fig.align='left'}
-plot2 <- ggplot(team_box_scores,
-                aes(x=fourleveloc,
-                    fill=fourleveloc)) + 
-    geom_bar(position='dodge', color='black') + 
-    labs(
-        title='Magnitude of Wins vs. Losses from 2021 to 2025',
-        x='Win & Loss Count',
-        y='Count',
-        fill='Win vs. Loss Magnitude') +
-    facet_wrap(~team) + 
-    theme_bw()
-plot2
+```{r}
+setwd('/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/Current')
+saveRDS(team_box_scores_3, file = 'teamvisdata.rds')
 ```

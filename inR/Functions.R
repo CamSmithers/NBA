@@ -2,48 +2,79 @@
 fixplayername <- function(dataset) {
     dataset %>%
         mutate(name = case_when(
-            name == "Alen SmailagiÄ" ~ "Alen Smailagic",
+            name == "Alen SmailagiÄ" |
+                name == 'Alen SmailagiÃÂ' ~ "Alen Smailagic",
             name == "Alperen ÅengÃ¼n" | 
-                name == "Alperen ÃÂengÃÂ¼n" ~ "Alperen Sengun",
-            name == "AnÅ¾ejs PaseÄÅiks" ~ "Anžejs Pasečņiks",
-            name == "Anderson VarejÃ£o" ~ "Anderson Varejao",
-            name == "Boban MarjanoviÄ"~ "Boban Marjanović",
-            name == "Bogdan BogdanoviÄ" ~ "Bogdan Bogdanović",
+                name == "Alperen ÃÂengÃÂ¼n" |
+                name == 'Alperen ÅengÃ¼n' ~ "Alperen Sengun",
+            name == "AnÅ¾ejs PaseÄÅiks" |
+                name == 'AnÃÂ¾ejs PaseÃÂÃÂiks' ~ "Anžejs Pasečņiks",
+            name == "Anderson VarejÃ£o" | 
+                name == 'Anderson VarejÃÂ£o'~ "Anderson Varejao",
+            name == 'Armel TraorÃ©' ~ 'Armel Traoré',
+            name == "Boban MarjanoviÄ" | 
+                name == 'Boban MarjanoviÃÂ' ~ "Boban Marjanović",
+            name == "Bogdan BogdanoviÄ" | 
+                name == 'Bogdan BogdanoviÃÂ'~ "Bogdan Bogdanović",
             name == "Bojan BogdanoviÄ" | 
                 name == "Bojan BogdanoviÃÂ" ~ "Bojan Bogdanović",
-            name == "Cristiano FelÃ­cio" ~ "Cristiano Felicio",
-            name == "Dario Å ariÄ" ~ "Dario Šarić", #No Fix
-            name == "DÄvis BertÄns" ~ "Dāvis Bertāns",
-            name == "Dennis SchrÃ¶der" ~ "Dennis Schröder",
-            name == "Ersan Ä°lyasova" ~ "Ersan Ilyasova",
-            name == "Filip PetruÅ¡ev" ~ "Filip Petrusev",
-            name == "Goran DragiÄ" ~ "Goran Dragic",
+            name == "Cristiano FelÃ­cio" | 
+                name == 'Cristiano FelÃÂ­cio' ~ "Cristiano Felicio",
+            name == "Dario Å ariÄ" |
+                name == 'Dario ÃÂ ariÃÂ' |
+                name == 'Dario Å ariÄ' ~ "Dario Šarić", #No Fix
+            name == "DÄvis BertÄns" | 
+                name == 'DÃÂvis BertÃÂns'~ "Dāvis Bertāns",
+            name == "Dennis SchrÃ¶der" | 
+                name == 'Dennis SchrÃÂ¶der' ~ "Dennis Schröder",
+            name == "Ersan Ä°lyasova" | 
+                name == 'Ersan ÃÂ°lyasova'~ "Ersan Ilyasova",
+            name == "Filip PetruÅ¡ev" |
+                name == 'Filip PetruÃÂ¡ev'~ "Filip Petrusev",
+            name == "Goran DragiÄ" | 
+                name == 'Goran DragiÃÂ'~ "Goran Dragic",
             name == "Jonas ValanÄiÅ«nas" | 
                 name == "Jonas ValanÃÂiÃÂ«nas" ~ "Jonas Valančiūnas",
-            name == "Juancho HernangÃ³mez" ~ "Juancho Hernangomez",
+            name == "Juancho HernangÃ³mez" |
+                name == 'Juancho HernangÃÂ³mez'~ "Juancho Hernangomez",
             name == "Jusuf NurkiÄ" | 
                 name == "Jusuf NurkiÃÂ" ~ "Jusuf Nurkić",
-            name == "Karim ManÃ©" ~ "Karim Mane",
+            name == "Karim ManÃ©" | 
+                name == 'Karim ManÃÂ©'~ "Karim Mane",
+            name == 'Karlo MatkoviÄ' ~ 'Karlo Matković',
             name == "Kristaps PorziÅÄ£is" | 
                 name == "Kristaps PorziÃÂÃÂ£is"~ "Kristaps Porziņģis",
-            name == "Lester QuiÃ±ones" ~ "Lester Quinones",
-            name == "Luka Å amaniÄ" ~ "Luka Samanic", #No Fix
+            name == "Lester QuiÃ±ones" | 
+                name == 'Lester QuiÃÂ±ones'~ "Lester Quinones",
+            name == "Luka Å amaniÄ" |
+                name == 'Luka ÃÂ amaniÃÂ'~ "Luka Samanic", #No Fix?
             name == "Luka DonÄiÄ" | 
                 name == "Luka DonÃÂiÃÂ" ~ "Luka Dončić",
-            name == "MÃ£ozinha Pereira" ~ "Maozinha Pereira",
-            name == "Moussa DiabatÃ©" ~ "Moussa Diabaté",
-            name == "NicolÃ² Melli" ~ "Nicolo Melli",
+            name == "MÃ£ozinha Pereira" | 
+                name == 'MÃÂ£ozinha Pereira'~ "Maozinha Pereira",
+            name == "Moussa DiabatÃ©" | 
+                name == 'Moussa DiabatÃÂ©'~ "Moussa Diabaté",
+            name == "NicolÃ² Melli" |
+                name == 'NicolÃÂ² Melli'~ "Nicolo Melli",
             name == "Nikola JokiÄ" | 
                 name == "Nikola JokiÃÂ" ~ "Nikola Jokić",
-            name == "Nikola JoviÄ" ~ "Nikola Jović",
+            name == "Nikola JoviÄ" | 
+                name == 'Nikola JoviÃÂ'~ "Nikola Jović",
             name == "Nikola VuÄeviÄ" | 
                 name == "Nikola VuÃÂeviÃÂ" ~ "Nikola Vučević",
-            name == "ThÃ©o Maledon" ~ "Theo Maledon",
-            name == "TimothÃ© Luwawu-Cabarrot" ~ "Timothe Luwawu-Cabarrot",
-            name == "TomÃ¡Å¡ SatoranskÃ½" ~ "Tomas Satoransky",
-            name == "Vasilije MiciÄ" ~ "Vasilije Micić",
-            name == "Vlatko ÄanÄar" ~ "Vlatko Čančar",
-            name == "Willy HernangÃ³mez" ~ "Willy Hernangomez",
+            name == 'Skal LabissiÃ¨re' ~ 'Skal Labissière',
+            name == "ThÃ©o Maledon" | 
+                name == 'ThÃÂ©o Maledon'~ "Theo Maledon",
+            name == "TimothÃ© Luwawu-Cabarrot" | 
+                name == 'TimothÃÂ© Luwawu-Cabarrot'~"Timothe Luwawu-Cabarrot",
+            name == "TomÃ¡Å¡ SatoranskÃ½" | 
+                name == 'TomÃÂ¡ÃÂ¡ SatoranskÃÂ½'~ "Tomas Satoransky",
+            name == "Vasilije MiciÄ" | 
+                name == 'Vasilije MiciÃÂ'~ "Vasilije Micić",
+            name == "Vlatko ÄanÄar" | 
+                name == 'Vlatko ÃÂanÃÂar'~ "Vlatko Čančar",
+            name == "Willy HernangÃ³mez" | 
+                name == 'Willy HernangÃÂ³mez'~ "Willy Hernangomez",
             TRUE ~ name
         ))
 }

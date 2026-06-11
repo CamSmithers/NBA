@@ -1,5 +1,1 @@
-testing_data <- team_box_scores %>%
-    group_by(season) %>%
-    summarize(
-        std = sd(offrating)
-    )
+namecheck <- data.frame(unique(player_box_scores$name))

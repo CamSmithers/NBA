@@ -16,6 +16,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ### Packages
 
 ```{r}
+set.seed(157)
 library(tidyverse)
 ```
 
@@ -43,8 +44,8 @@ player_season_stats <- readRDS(
 Applying a function I wrote that fixes some aesthetic issues with player names. This will occur with foreign players that have special characters or foreign characters in their name.
 
 ```{r}
-#player_box_scores <- fixplayername(player_box_scores)
-#player_season_stats <- fixplayername(player_season_stats)
+player_box_scores <- fixplayername(player_box_scores)
+player_season_stats <- fixplayername(player_season_stats)
 ```
 
 ### Outcomes and Small Metrics
@@ -97,27 +98,67 @@ I want to look at how missing a player affects the chance of a team to win a gam
 2.  Value Over Replacement Player (VORP): `vorp`
 3.  Player Efficiency Rating: `player_effrtg`
 
+I'm also going to create a variable that has a unique id for each best player by a given metric.
+
 ```{r}
-bp_by_ws <- best_player_metric(player_season_stats, ws, 20, 10)
-bp_by_vorp <- best_player_metric(player_season_stats, vorp, 20, 10)
-bp_by_per <- best_player_metric(player_season_stats, player_effrtg, 20, 10)
+bp_by_ws <- best_player_metric(player_season_stats, ws, 20, 10) %>%
+    rename('ws_name'='name') %>%
+    unite('ws_team_id', c('year', 'team', 'ws_player_id'),
+          sep = '_', remove = FALSE) %>%
+    mutate(ws_team_id = paste0('ws_', ws_team_id)) %>%
+    relocate(ws_team_id, .after = last_col())
+bp_by_vorp <- best_player_metric(player_season_stats, vorp, 20, 10) %>%
+    rename('vorp_name'='name') %>%
+    unite('vorp_team_id', c('year', 'team', 'vorp_player_id'), 
+          sep = '_', remove = FALSE) %>%
+    mutate(vorp_team_id = paste0('vorp_', vorp_team_id)) %>%
+    relocate(vorp_team_id, .after = last_col())
+bp_by_per <- best_player_metric(player_season_stats, player_effrtg, 20, 10) %>%
+    rename('per_name'='name') %>%
+    unite('per_team_id', c('year', 'team', 'player_effrtg_player_id'), 
+          sep = '_', remove = FALSE) %>%
+    mutate(per_team_id = paste0('per_', per_team_id)) %>%
+    relocate(per_team_id, .after = last_col())
 ```
+
+Here I'm going to create a variable within each data set that will allow to check for player availability when coding a future outcome variable
 
 Joining the data from the best player by a certain metric data sets to later determine if player was on the court and how that affected the outcome.
 
 ```{r}
 team_box_scores_2 <- team_box_scores %>%
     left_join(bp_by_ws, by = c('team', 'season'='year')) %>%
-    left_join(bp_by_vorp, by = c('team', 'season'='year', 'name')) %>%
-    left_join(bp_by_per, by = c('team', 'season'='year', 'name'))
+    left_join(bp_by_vorp, by = c('team', 'season'='year')) %>%
+    left_join(bp_by_per, by = c('team', 'season'='year')) %>%
+    mutate(
+        ws_tm_game_id = paste0(ws_team_id, '_', gamedate),
+        vorp_tm_game_id = paste0(vorp_team_id, '_', gamedate),
+        per_tm_game_id = paste0(per_team_id, '_', gamedate))
+
+player_box_scores_2 <- player_box_scores %>%
+    left_join(bp_by_ws, by = c('team', 'season'='year', 'name'='ws_name')) %>%
+    left_join(bp_by_vorp, by = c('team', 'season'='year', 'name'='vorp_name')) %>%
+    left_join(bp_by_per, by = c('team', 'season'='year', 'name'='per_name')) %>%
+    mutate(
+        ws_plyr_game_id = if_else(
+            !is.na(ws_team_id), paste0(ws_team_id, '_', gamedate), NA),
+        vorp_plyr_game_id = if_else(
+            !is.na(vorp_team_id), paste0(vorp_team_id, '_', gamedate), NA),
+        per_plyr_game_id = if_else(
+            !is.na(per_team_id), paste0(per_team_id, '_', gamedate), NA))
 ```
 
-Things needed to create this conditional outcome variable or variables...
+After creating the data sets necessary to determine whether a team's best player (by a given metric) was available I can now create an outcome variable to check for it.
 
 ```{r}
 team_box_scores_3 <- team_box_scores_2 %>%
-    unite('ws_team_data', c('gamedate', 'team', 'name', 'season'), 
-          sep = '_', remove = FALSE) %>
+    mutate(
+        ws_bpa = if_else(ws_tm_game_id %in% 
+                                player_box_scores_2$ws_plyr_game_id, 1, 0),
+        vorp_bpa = if_else(vorp_tm_game_id %in% 
+                               player_box_scores_2$vorp_plyr_game_id, 1, 0),
+        per_bpa = if_else(per_tm_game_id %in%
+                              player_box_scores_2$per_plyr_game_id, 1, 0))
 ```
 
 ### Outcome Visualizations

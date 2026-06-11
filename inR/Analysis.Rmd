@@ -158,7 +158,36 @@ team_box_scores_3 <- team_box_scores_2 %>%
         vorp_bpa = if_else(vorp_tm_game_id %in% 
                                player_box_scores_2$vorp_plyr_game_id, 1, 0),
         per_bpa = if_else(per_tm_game_id %in%
-                              player_box_scores_2$per_plyr_game_id, 1, 0))
+                              player_box_scores_2$per_plyr_game_id, 1, 0)) %>%
+    mutate(
+        ws_bpa_multi = case_when(
+            twoleveloc == 'Loss' & ws_bpa == 0 ~ 0,
+            twoleveloc == 'Loss' & ws_bpa == 1 ~ 1,
+            twoleveloc == 'Win' & ws_bpa == 0 ~ 2,
+            twoleveloc == 'Win' & ws_bpa == 1 ~ 3),
+        vorp_bpa_multi = case_when(
+            twoleveloc == 'Loss' & vorp_bpa == 0 ~ 0,
+            twoleveloc == 'Loss' & vorp_bpa == 1 ~ 1,
+            twoleveloc == 'Win' & vorp_bpa == 0 ~ 2,
+            twoleveloc == 'Win' & vorp_bpa == 1 ~ 3),
+        per_bpa_multi = case_when(
+            twoleveloc == 'Loss' & per_bpa == 0 ~ 0,
+            twoleveloc == 'Loss' & per_bpa == 1 ~ 1,
+            twoleveloc == 'Win' & per_bpa == 0 ~ 2,
+            twoleveloc == 'Win' & per_bpa == 1 ~ 3))
+```
+
+### Summary Data
+
+```{r}
+team_box_summary <- team_box_scores_3 %>%
+    group_by(season, team) %>%
+    summarise(
+        avg_fg_pct = round(mean(fg_pct, na.rm=TRUE), 3),
+        avg_3fg_pct = round(mean(threefg_pct, na.rm=TRUE), 3),
+        avg_pts = round(mean(pts, na.rm=TRUE), 1),
+        avg_offrating = round(mean(offrating, na.rm=TRUE), 1),
+        avg_defrating = round(mean(defrating, na.rm=TRUE), 1))
 ```
 
 ### Outcome Visualizations

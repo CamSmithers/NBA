@@ -7,7 +7,8 @@ fixplayername <- function(dataset) {
                 name == 'Alen SmailagiÃÂ' ~ "Alen Smailagic",
             name == "Alperen ÅengÃ¼n" | 
                 name == "Alperen ÃÂengÃÂ¼n" |
-                name == 'Alperen ÅengÃ¼n' ~ "Alperen Sengun",
+                name == 'Alperen ÅengÃ¼n' |
+                name == 'Alperen Şengün'~ "Alperen Sengun",
             name == "AnÅ¾ejs PaseÄÅiks" |
                 name == 'AnÃÂ¾ejs PaseÃÂÃÂiks' ~ "Anžejs Pasečņiks",
             name == "Anderson VarejÃ£o" | 

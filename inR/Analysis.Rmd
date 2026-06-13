@@ -2,9 +2,7 @@
 title: "Analysis"
 author: "Cam Smithers"
 date: "`r Sys.Date()`"
-output: 
-  pdf_document: 
-    fig_height: 5
+output: pdf_document
 ---
 
 # Analysis
@@ -151,7 +149,7 @@ player_box_scores_2 <- player_box_scores %>%
             !is.na(per_team_id), paste0(per_team_id, '_', gamedate), NA))
 ```
 
-After creating the data sets necessary to determine whether a team's best player (by a given metric) was available I can now create an outcome variable to check for it.
+After creating the data sets necessary to determine whether a team's best player (by a given metric) was available I can now create an outcome variable to check for it. I'm also going to add a variable to determines whether a game was a regular season game or playoff game.
 
 Note: *I know I don't have to use multiple mutate functions; however, at times I like to use multiple as it helps me organize my code as I'm writing it.*
 
@@ -192,7 +190,26 @@ team_box_scores_3 <- team_box_scores_2 %>%
         per_bpa_multi = factor(per_bpa_multi,
                                levels = c(0, 1, 2, 3),
                                labels = c('Loss Without', 'Loss With',
-                                          'Win Without', 'Win With')))
+                                          'Win Without', 'Win With'))) %>%
+    mutate(
+        gametype = case_when(
+            #2021 Season
+            (gamedate >= as.Date('2021-05-22') & 
+                 gamedate <= as.Date('2021-07-20')) |
+                #2022 Season
+                (gamedate >= as.Date('2022-04-16') & 
+                     gamedate <= as.Date('2022-06-16')) |
+                #2023 Season
+                (gamedate >= as.Date('2023-04-15') & 
+                     gamedate <= as.Date('2023-06-12')) |
+                #2024 Season
+                (gamedate >= as.Date('2024-04-20') & 
+                     gamedate<= as.Date('2024-06-17')) |
+                #2025 Season
+                (gamedate >= as.Date('2025-04-19') & 
+                     gamedate <= as.Date('2025-06-2022')) ~ 'Playoff Game',
+            TRUE ~ 'Regular Season Game')
+    )
 ```
 
 ### Summary Data

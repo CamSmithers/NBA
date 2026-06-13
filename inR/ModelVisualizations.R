@@ -2,6 +2,7 @@ library(tidyverse)
 setwd('/Users/camsmithers/Desktop/Camalytics/NBA')
 current_date <- format(Sys.Date(), '%m_%d_%y')
 teamvisdata <- readRDS('Data-NBA/Current/teamvisdata.rds')
+teamboxsummary <- readRDS('Data-NBA/Current/teamboxsummary.rds')
 data_years <- unique(teamvisdata$season)
 
 for (data_year in data_years) {
@@ -39,7 +40,7 @@ for (data_year in data_years) {
         geom_text(stat = 'count',
                   aes(label=after_stat(count)),
                   position=position_dodge(width=0.8),
-                  hjust=1.05) +
+                  hjust=-.5) +
         scale_x_continuous(limits = c(0, 100)) +
         theme_bw() +
         facet_wrap(~team) +
@@ -133,3 +134,13 @@ for (data_year in data_years) {
         path='Images/BarPlots',
         width=35, height=20, units='cm')
 }
+
+#Change Scatter with Few Data Points to GGImage
+plot1scatter <- ggplot(teamboxsummary,
+                    aes(x=avg_offrating, 
+                        y=avg_defrating,
+                        color=team)) +
+    geom_point() +
+    scale_y_reverse() +
+    theme_bw()
+plot1scatter

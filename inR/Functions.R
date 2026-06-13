@@ -35,6 +35,8 @@ fixplayername <- function(dataset) {
                 name == 'Filip PetruÃÂ¡ev'~ "Filip Petrusev",
             name == "Goran DragiÄ" | 
                 name == 'Goran DragiÃÂ'~ "Goran Dragic",
+            name == 'Jeff Dowtin'| 
+                name == 'Jeff Dowtin Jr.' ~ 'Jeff Dowtin Jr.',
             name == "Jonas ValanÄiÅ«nas" | 
                 name == "Jonas ValanÃÂiÃÂ«nas" ~ "Jonas Valančiūnas",
             name == "Juancho HernangÃ³mez" |
@@ -47,9 +49,11 @@ fixplayername <- function(dataset) {
             name == "Kristaps PorziÅÄ£is" | 
                 name == "Kristaps PorziÃÂÃÂ£is"~ "Kristaps Porziņģis",
             name == "Lester QuiÃ±ones" | 
-                name == 'Lester QuiÃÂ±ones'~ "Lester Quinones",
+                name == 'Lester QuiÃÂ±ones' | 
+                name == 'Lester Quiñones' ~ "Lester Quinones",
             name == "Luka Å amaniÄ" |
-                name == 'Luka ÃÂ amaniÃÂ'~ "Luka Samanic", #No Fix?
+                name == 'Luka ÃÂ amaniÃÂ' |
+                name == 'Luka Å amaniÄ' ~ "Luka Samanic", #No Fix?
             name == "Luka DonÄiÄ" | 
                 name == "Luka DonÃÂiÃÂ" ~ "Luka Dončić",
             name == "MÃ£ozinha Pereira" | 

@@ -1,8 +1,18 @@
 library(tidyverse)
+library(ggimage)
 setwd('/Users/camsmithers/Desktop/Camalytics/NBA')
 current_date <- format(Sys.Date(), '%m_%d_%y')
 teamvisdata <- readRDS('Data-NBA/Current/teamvisdata.rds')
 teamboxsummary <- readRDS('Data-NBA/Current/teamboxsummary.rds')
+imagedata <- read_csv('Data-NBA/Current/TeamLogos.csv') %>%
+    rename('fullname'='team')
+
+teamvisdata <- teamvisdata %>%
+    left_join(imagedata, by=c('team'='abbreviation'))
+
+teamboxsummary <- teamboxsummary %>%
+    left_join(imagedata, by=c('team'='abbreviation'))
+
 data_years <- unique(teamvisdata$season)
 
 for (data_year in data_years) {
@@ -138,9 +148,14 @@ for (data_year in data_years) {
 #Change Scatter with Few Data Points to GGImage
 plot1scatter <- ggplot(teamboxsummary,
                     aes(x=avg_offrating, 
-                        y=avg_defrating,
-                        color=team)) +
-    geom_point() +
+                        y=avg_defrating)) +
+    #geom_point() +
+    geom_image(aes(image=image_path), size=0.075,) +
     scale_y_reverse() +
-    theme_bw()
+    theme_bw() +
+    facet_wrap(~season) +
+    labs(
+        title='Average Offensive vs. Defensive Rating (Facet by Seaon)',
+        x='Average Offensive Rating',
+        y='Average Defensive Rating')
 plot1scatter

@@ -4,3 +4,4 @@ Archive/
 dashboard/*.csv
 .DS_Store
 .Rhistory
+chromedriver

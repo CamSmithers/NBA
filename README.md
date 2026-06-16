@@ -20,11 +20,9 @@ R & RMD Files
    * Used to analyze data and create visualizations.
 
 Python & PyNB Flies
-1. NBA Scraping
-   * Scraping data from the web using the BeautifulSoup library.
-2. Se Scraping
+1. SeleniumScraping
    * Scraping data from the web using the Selenium library. The change was made as the webpage I was scraping was rejecting my request as they determined I was using automated software. To get around this issue, Selenium was used to automate Chrome to appear more human enable scraping to take place.
-3. NBA HTML Parser
+2. HTMLParsing
    * Going through the webpages saved as HTML files and grabbing the necessary data that I need from them to analyze data.
 
 ## Goals & Aims

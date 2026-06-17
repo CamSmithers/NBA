@@ -2,29 +2,30 @@ setwd('/Users/camsmithers/Desktop/Camalytics/NBA')
 library(tidyverse)
 
 # Loading in Data
-misc_stats <- read_csv('Data-NBA/Original-2024/misc.csv')
-#general_stats  <- read_csv('Data-NBA/Original-2024/all_general-2425.csv')
+misc_stats <- read_csv('Data-NBA/Adding-2526/misc-2526.csv') %>%
+    select(-last_col())
 
-advanced_box_stats <- read_csv('Data-NBA/Original-2024/AdvancedBox.csv')
-basic_box_stats <- read_csv('Data-NBA/Original-2024/BasicBox.csv')
+advanced_box_stats <- read_csv('Data-NBA/Adding-2526/AdvancedBox2526.csv') %>%
+    select(-last_col())
+basic_box_stats <- read_csv('Data-NBA/Adding-2526/BasicBox2526.csv')
 
-adj_shooting_stats <- read_csv('Data-NBA/Original-2024/adjshooting.csv')
-advanced_stats <- read_csv('Data-NBA/Original-2024/advanced.csv')
-playbyplay_stats <- read_csv('Data-NBA/Original-2024/pbp.csv')
-per36min_stats <- read_csv('Data-NBA/Original-2024/per36.csv')
-per100poss_stats <- read_csv('Data-NBA/Original-2024/per100.csv')
-pergame_stats <- read_csv('Data-NBA/Original-2024/pgs.csv')
-shooting_stats <- read_csv('Data-NBA/Original-2024/shooting.csv')
-totals_stats <- read_csv('Data-NBA/Original-2024/totals.csv')
+adj_shooting_stats <- read_csv('Data-NBA/Adding-2526/adjshooting-2526.csv')
+advanced_stats <- read_csv('Data-NBA/Adding-2526/advanced-2526.csv')
+playbyplay_stats <- read_csv('Data-NBA/Adding-2526/pbp-2526.csv')
+per36min_stats <- read_csv('Data-NBA/Adding-2526/per36-2526.csv')
+per100poss_stats <- read_csv('Data-NBA/Adding-2526/per100-2526.csv')
+pergame_stats <- read_csv('Data-NBA/Adding-2526/pgs-2526.csv')
+shooting_stats <- read_csv('Data-NBA/Adding-2526/shooting-2526.csv')
+totals_stats <- read_csv('Data-NBA/Adding-2526/totals-2526.csv')
 
-playoff_adj_shooting_stats <- read_csv('Data-NBA/Original-2024/playoff_adjshooting.csv')
-playoff_advanced_stats <- read_csv('Data-NBA/Original-2024/playoff_advanced.csv')
-playoff_playbyplay_stats <- read_csv('Data-NBA/Original-2024/playoff_pbp.csv')
-playoff_per36min_stats <- read_csv('Data-NBA/Original-2024/playoff_per36.csv')
-playoff_per100poss_stats <- read_csv('Data-NBA/Original-2024/playoff_per100.csv')
-playoff_pergame_stats <- read_csv('Data-NBA/Original-2024/playoff_pgs.csv')
-playoff_shooting_stats <- read_csv('Data-NBA/Original-2024/playoff_shooting.csv')
-playoff_totals_stats <- read_csv('Data-NBA/Original-2024/playoff_totals.csv')
+playoff_adj_shooting_stats <- read_csv('Data-NBA/Adding-2526/playoff_adjshooting-2526.csv')
+playoff_advanced_stats <- read_csv('Data-NBA/Adding-2526/playoff_advanced-2526.csv')
+playoff_playbyplay_stats <- read_csv('Data-NBA/Adding-2526/playoff_pbp-2526.csv')
+playoff_per36min_stats <- read_csv('Data-NBA/Adding-2526/playoff_per36-2526.csv')
+playoff_per100poss_stats <- read_csv('Data-NBA/Adding-2526/playoff_per100-2526.csv')
+playoff_pergame_stats <- read_csv('Data-NBA/Adding-2526/playoff_pgs-2526.csv')
+playoff_shooting_stats <- read_csv('Data-NBA/Adding-2526/playoff_shooting-2526.csv')
+playoff_totals_stats <- read_csv('Data-NBA/Adding-2526/playoff_totals-2526.csv')
 
 # Change Column Names
 misc_names <- c("team_league_stats", "win", "loss", "exp_win", "exp_loss", 
@@ -45,7 +46,7 @@ advanced_box_names <- c("obs_num", "name", "min", "ts_pct", "efg_pct",
                         "three_par", "ftar", "oreb_pct", "dreb_pct", "treb_pct", 
                         "ast_pct", "stl_pct", "blk_pct", "tov_pct", "usage_rate", 
                         "offrating", "defrating", "box_plusminus", "team_id", 
-                        "game_id", "opp_id")
+                        "game_id", "opp_id") #Last column is completely empty
 names(advanced_box_stats) <- advanced_box_names
 
 basic_box_names <- c("obs_num", "name", "min", "fg", "fga", "fg_pct", 

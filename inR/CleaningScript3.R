@@ -11,14 +11,12 @@ misc_stats_2 <- misc_stats %>%
     select(team, year, everything()) %>%
     mutate(team_league_stats = case_when(
         team_league_stats == "Team" ~ "team",
-        team_league_stats == "Lg Rank" ~ "lgrk"
-    )) %>%
+        team_league_stats == "Lg Rank" ~ "lgrk")) %>%
     pivot_wider(
         id_cols = c(team, year),
         names_from = team_league_stats,
         values_from = -c(team, year, team_league_stats),
-        names_glue = "{.value}_{tolower(team_league_stats)}"
-    ) %>%
+        names_glue = "{.value}_{tolower(team_league_stats)}") %>%
     select(team, year, ends_with("_team"), ends_with("_lgrk"))
 
 playoff_pg_team <- team_data_prep_drop(
@@ -93,7 +91,9 @@ basic_box_team <- basic_box_stats %>%
 #---------------------------------------------------------------------------#
 #Team Advanced Box Scores
 advanced_box_team <- advanced_box_stats %>%
-    select(-last_col()) %>%
+    ###select(-last_col()) %>%
+        #Commented out since the last column was dropped earlier
+    ###
     fill(opp_id, .direction = "down") %>%
     filter(name == "Team Totals") %>%
     mutate(
@@ -124,14 +124,14 @@ team_box_scores <- basic_box_team %>%
         gamedate >= as.Date("2024-10-15") & 
             gamedate <= as.Date("2025-07-01") ~ 2025))
 
-#saveRDS(
-#    team_season_stats,
-#    file = 
-#    "/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/Original-2024/team_season_stats_fixed.rds")
-#saveRDS(
-#    team_box_scores, 
-#    file = 
-#    "/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/team_box_scores.rds")
+saveRDS(
+    team_season_stats,
+    file = 
+    "Data-NBA/Adding-2526/team_season_stats_2526.rds")
+saveRDS(
+    team_box_scores, 
+    file = 
+    "Data-NBA/Adding-2526/team_box_scores_2526.rds")
 
 #---------------------------------------------------------------------------#
 #Player Basic Box Scores
@@ -155,7 +155,9 @@ basic_box_player <- basic_box_stats %>%
 #---------------------------------------------------------------------------#
 #Player Advanced Box Scores
 advanced_box_player <- advanced_box_stats %>%
-    select(-last_col()) %>%
+    ###select(-last_col()) %>%
+    #Commented out since the last column was dropped earlier
+    ###
     fill(opp_id, .direction = "down") %>%
     filter(name != "Team Totals" & name != "Reserves") %>%
     mutate(
@@ -190,10 +192,10 @@ full_box_player <- basic_box_player %>%
 #Ignore NAs introduced by coercion, those players didn't play
 #So the mins should be NA
 
-#saveRDS(
-#    full_box_player,
-#    file = 
-#    "/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/full_box_player.rds")
+saveRDS(
+    full_box_player,
+    file = 
+    "Data-NBA/Adding-2526/full_box_player_2526.rds")
 
 #----------------------------------------------------------------------------#
 #Player Season Statistics
@@ -266,12 +268,12 @@ player_regseason_stats <- reduce(player_regseason_stats_list, left_join,
 player_postseason_stats <- reduce(player_postseason_stats_list, left_join,
                                  by = c("team", "year", "name"))
 
-#saveRDS(
-#    player_regseason_stats,
-#    file = 
-#    "/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/plyr_regsn_stats.rds")
+saveRDS(
+    player_regseason_stats,
+    file = 
+    "Data-NBA/Adding_2526/plyr_regsn_stats_2526.rds")
 
-#saveRDS(
-#    player_postseason_stats,
-#    file = 
-#        "/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/plyr_pstsn_stats.rds")
+saveRDS(
+    player_postseason_stats,
+    file = 
+        "Data-NBA/Adding_2526/plyr_pstsn_stats_2526.rds")

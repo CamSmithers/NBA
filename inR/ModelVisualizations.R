@@ -81,7 +81,8 @@ for (data_year in data_years) {
         theme_bw() +
         facet_wrap(~team) +
         labs(
-            title=paste0(data_year,': Missing Player w/ Most Win Shares'),
+            title=paste0(data_year,
+                         ': Missing Player w/ Most Win Shares'),
             fill='Outcome Type',
             x='Count',
             y='Outcome Type')
@@ -107,7 +108,8 @@ for (data_year in data_years) {
         theme_bw() +
         facet_wrap(~team) +
         labs(
-            title=paste0(data_year,': Missing Player w/ Highest VORP'),
+            title=paste0(data_year,
+                         ': Missing Player w/ Highest VORP'),
             fill='Outcome Type',
             x='Count',
             y='Outcome Type')
@@ -133,7 +135,8 @@ for (data_year in data_years) {
         theme_bw() +
         facet_wrap(~team) +
         labs(
-            title=paste0(data_year,': Missing Player w/ Highest PER'),
+            title=paste0(data_year,
+                         ': Missing Player w/ Highest PER'),
             fill='Outcome Type',
             x='Count',
             y='Outcome Type')

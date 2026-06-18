@@ -33,13 +33,13 @@ Loading in the data sets that I'll need for analysis.
 ```{r}
 setwd('/Users/camsmithers/Desktop/Camalytics/NBA')
 team_box_scores <- readRDS(
-    'Data-NBA/Current/team_box_scores_updated.rds')
+    'Data-NBA/Current/team_box_scores_current.rds')
 player_box_scores <- readRDS(
-    'Data-NBA/Current/full_box_player_updated.rds')
+    'Data-NBA/Current/full_box_player_current.rds')
 team_season_stats <- readRDS(
-    'Data-NBA/Current/team_season_stats_updated.rds')
+    'Data-NBA/Current/team_season_stats_current.rds')
 player_season_stats <- readRDS(
-    'Data-NBA/Current/player_season_stats_updated.rds')
+    'Data-NBA/Current/player_season_stats_current.rds')
 ```
 
 Applying a function I wrote that fixes some aesthetic issues with player names. This will occur with foreign players that have special characters or foreign characters in their name.

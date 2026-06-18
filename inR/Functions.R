@@ -68,6 +68,8 @@ fixplayername <- function(dataset) {
                 name == 'Nikola JoviÃÂ'~ "Nikola Jović",
             name == "Nikola VuÄeviÄ" | 
                 name == "Nikola VuÃÂeviÃÂ" ~ "Nikola Vučević",
+            name == 'Pacome Dadiet' |
+                name == 'Pacôme Dadiet' ~ 'Pacôme Dadiet',
             name == 'Skal LabissiÃ¨re' ~ 'Skal Labissière',
             name == "ThÃ©o Maledon" | 
                 name == 'ThÃÂ©o Maledon'~ "Theo Maledon",
@@ -77,6 +79,8 @@ fixplayername <- function(dataset) {
                 name == 'TomÃÂ¡ÃÂ¡ SatoranskÃÂ½'~ "Tomas Satoransky",
             name == "Vasilije MiciÄ" | 
                 name == 'Vasilije MiciÃÂ'~ "Vasilije Micić",
+            name == 'Vit Krejci' |
+                name == 'Vít Krejčí' ~ 'Vít Krejčí',
             name == "Vlatko ÄanÄar" | 
                 name == 'Vlatko ÃÂanÃÂar'~ "Vlatko Čančar",
             name == "Willy HernangÃ³mez" | 

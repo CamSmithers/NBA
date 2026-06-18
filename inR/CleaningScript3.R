@@ -122,7 +122,9 @@ team_box_scores <- basic_box_team %>%
         gamedate >= as.Date("2023-10-24") & 
             gamedate <= as.Date("2024-06-17") ~ 2024,
         gamedate >= as.Date("2024-10-15") & 
-            gamedate <= as.Date("2025-07-01") ~ 2025))
+            gamedate <= as.Date("2025-07-01") ~ 2025,
+        gamedate >= as.Date("2025-10-21") & 
+            gamedate <= as.Date("2026-06-13") ~ 2026))
 
 saveRDS(
     team_season_stats,
@@ -184,7 +186,11 @@ full_box_player <- basic_box_player %>%
         gamedate >= as.Date("2022-10-18") & 
             gamedate <= as.Date("2023-06-12") ~ 2023,
         gamedate >= as.Date("2023-10-24") & 
-            gamedate <= as.Date("2024-06-17") ~ 2024)) %>%
+            gamedate <= as.Date("2024-06-17") ~ 2024,
+        gamedate >= as.Date("2024-10-15") & 
+            gamedate <= as.Date("2025-07-01") ~ 2025,
+        gamedate >= as.Date("2025-10-21") & 
+            gamedate <= as.Date("2026-06-13") ~ 2026)) %>%
     mutate(across(
         -all_of(c("gamedate", "homeaway", "name", "min", "team", "opponent")),
         ~ as.numeric(.))) %>%
@@ -271,9 +277,9 @@ player_postseason_stats <- reduce(player_postseason_stats_list, left_join,
 saveRDS(
     player_regseason_stats,
     file = 
-    "Data-NBA/Adding_2526/plyr_regsn_stats_2526.rds")
+    "Data-NBA/Adding-2526/plyr_regsn_stats_2526.rds")
 
 saveRDS(
     player_postseason_stats,
     file = 
-        "Data-NBA/Adding_2526/plyr_pstsn_stats_2526.rds")
+        "Data-NBA/Adding-2526/plyr_pstsn_stats_2526.rds")

@@ -9,7 +9,6 @@ output: pdf_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-#knitr::opts_knit$set(root.dir = '/Users/camsmithers/Desktop/Camalytics/NBA')
 ```
 
 ### Packages
@@ -17,6 +16,8 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r}
 set.seed(157)
 library(tidyverse)
+library(glue)
+library(zoo)
 ```
 
 ### Functions Script
@@ -207,9 +208,32 @@ team_box_scores_3 <- team_box_scores_2 %>%
                      gamedate<= as.Date('2024-06-17')) |
                 #2025 Season
                 (gamedate >= as.Date('2025-04-19') & 
-                     gamedate <= as.Date('2025-06-2022')) ~ 'Playoff Game',
-            TRUE ~ 'Regular Season Game')
-    )
+                     gamedate <= as.Date('2025-06-2022')) |
+                 ##2026 Season
+                 (gamedate >= as.Date('2026-04-18') & 
+                     gamedate <= as.Date('2026-06-13')) ~ 'Playoff Game',
+            TRUE ~ 'Regular Season Game'))
+```
+
+Here I'm going to create some variables that will be used as possible predictors when testing regression models. There are great variables to work with in the data set so far; however, I want to create some rolling averages so I can measure how teams are doing across seasons and within a certain window.
+
+```{r}
+regsnbox <- team_box_scores_3 %>%
+    filter(gametype == 'Regular Season Game') %>%
+    group_by(team) %>%
+    arrange(desc(gamedate), .by_group=TRUE) %>%
+    mutate(
+        roll_fg_pct = rollmean(fg_pct, k=10, fill=NA, align='left'),
+        roll_threefg_pct = rollmean(threefg_pct, k=10, fill=NA, align='left'),
+        roll_pts = rollmean(pts, k=10, fill=NA, align='left'),
+        roll_three_par = rollmean(three_par, k=10, fill=NA, align='left'),
+        roll_dreb_pct = rollmean(dreb_pct, k=10, fill=NA, align='left'),
+        roll_ftar = rollmean(ftar, k=10, fill=NA, align='left'),
+        roll_ast_pct = rollmean(ast_pct, k=10, fill=NA, align='left'),
+        roll_offrating = rollmean(offrating, k=10, fill=NA, align='left'),
+        roll_defrating = rollmean(defrating, k=10, fill=NA, align='left'),
+        roll_opp_pts = rollmean(opp_pts, k=10, fill=NA, align='left'),
+        roll_ptsdiff = rollmean(ptsdiff, k=10, fill=NA, align='left'))
 ```
 
 ### Summary Data
@@ -230,4 +254,5 @@ team_box_summary <- team_box_scores_3 %>%
 ```{r}
 setwd('/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/Current')
 saveRDS(team_box_scores_3, file = 'teamvisdata.rds')
+saveRDS(team_box_summary, file = 'teamboxsummary.rds')
 ```

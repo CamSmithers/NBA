@@ -209,7 +209,7 @@ team_box_scores_3 <- team_box_scores_2 %>%
                 #2025 Season
                 (gamedate >= as.Date('2025-04-19') & 
                      gamedate <= as.Date('2025-06-2022')) |
-                 ##2026 Season
+                #2026 Season
                  (gamedate >= as.Date('2026-04-18') & 
                      gamedate <= as.Date('2026-06-13')) ~ 'Playoff Game',
             TRUE ~ 'Regular Season Game'))
@@ -233,13 +233,46 @@ regsnbox <- team_box_scores_3 %>%
         roll_offrating = rollmean(offrating, k=10, fill=NA, align='left'),
         roll_defrating = rollmean(defrating, k=10, fill=NA, align='left'),
         roll_opp_pts = rollmean(opp_pts, k=10, fill=NA, align='left'),
-        roll_ptsdiff = rollmean(ptsdiff, k=10, fill=NA, align='left'))
+        roll_ptsdiff = rollmean(ptsdiff, k=10, fill=NA, align='left')) %>%
+    select(gamedate, team, starts_with('roll_'))
+pstsnbox <- team_box_scores_3 %>%
+    filter(gametype == 'Playoff Game') %>%
+    group_by(team) %>%
+    arrange(desc(gamedate), .by_group=TRUE) %>%
+    mutate(
+        roll_fg_pct = rollmean(fg_pct, k=3, fill=NA, align='left'),
+        roll_threefg_pct = rollmean(threefg_pct, k=10, fill=NA, align='left'),
+        roll_pts = rollmean(pts, k=3, fill=NA, align='left'),
+        roll_three_par = rollmean(three_par, k=3, fill=NA, align='left'),
+        roll_dreb_pct = rollmean(dreb_pct, k=3, fill=NA, align='left'),
+        roll_ftar = rollmean(ftar, k=3, fill=NA, align='left'),
+        roll_ast_pct = rollmean(ast_pct, k=3, fill=NA, align='left'),
+        roll_offrating = rollmean(offrating, k=3, fill=NA, align='left'),
+        roll_defrating = rollmean(defrating, k=3, fill=NA, align='left'),
+        roll_opp_pts = rollmean(opp_pts, k=3, fill=NA, align='left'),
+        roll_ptsdiff = rollmean(ptsdiff, k=3, fill=NA, align='left')) %>%
+    select(gamedate, team, starts_with('roll_'))
+fullsnbox <- rbind(regsnbox, pstsnbox)
+```
+
+```{r}
+team_box_scores_4 <- team_box_scores_3 %>%
+    left_join(fullsnbox, by = c('gamedate', 'team')) %>%
+    mutate(across(c('roll_fg_pct','roll_threefg_pct','roll_three_par',
+                    'roll_ftar'), round, 3)) %>%
+    mutate(across(c('roll_pts','roll_dreb_pct','roll_ast_pct',
+                    'roll_offrating','roll_defrating','roll_opp_pts',
+                    'roll_ptsdiff'), round, 1)) %>%
+    select(-c(ws_name, ws, ws_player_id, ws_team_id, vorp_name, vorp, 
+              per_name, player_effrtg, player_effrtg_player_id, 
+              per_team_id, ws_tm_game_id, vorp_tm_game_id, 
+              per_tm_game_id, vorp_team_id, vorp_player_id))
 ```
 
 ### Summary Data
 
 ```{r}
-team_box_summary <- team_box_scores_3 %>%
+team_box_summary <- team_box_scores_4 %>%
     group_by(season, team) %>%
     summarise(
         avg_fg_pct = round(mean(fg_pct, na.rm=TRUE), 3),
@@ -251,8 +284,18 @@ team_box_summary <- team_box_scores_3 %>%
 
 ### Data Export for Visualizations
 
+Export data as RDS files for visualizations in R.
+
 ```{r}
 setwd('/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/Current')
-saveRDS(team_box_scores_3, file = 'teamvisdata.rds')
+saveRDS(team_box_scores_4, file = 'teamvisdata.rds')
 saveRDS(team_box_summary, file = 'teamboxsummary.rds')
+```
+
+Export data as CSV files for Python dashboard.
+
+```{r}
+setwd('/Users/camsmithers/Desktop/Camalytics/NBA/dashboard')
+write_csv(team_box_scores_4, file='teamvisdata.csv')
+write_csv(team_box_summary, file='teamboxsummary.csv')
 ```

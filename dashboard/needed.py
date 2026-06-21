@@ -5,4 +5,4 @@ from pathlib import Path
 import pandas as pd
 
 app_dir = Path(__file__).parent
-teamdata = pd.read_csv(app_dir / 'tbs.csv')
+teamdata = pd.read_csv(app_dir / 'teamvisdata.csv')

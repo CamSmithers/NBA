@@ -8,9 +8,7 @@ imagedata <- read_csv('Data-NBA/Current/TeamLogos.csv') %>%
     rename('fullname'='team')
 
 teamvisdata <- teamvisdata %>%
-    left_join(imagedata, by=c('team'='abbreviation'))
-
-teamboxsummary <- teamboxsummary %>%
+    left_join(teamboxsummary, by=c('team', 'season')) %>%
     left_join(imagedata, by=c('team'='abbreviation'))
 
 data_years <- unique(teamvisdata$season)
@@ -148,17 +146,41 @@ for (data_year in data_years) {
         width=35, height=20, units='cm')
 }
 
-#Change Scatter with Few Data Points to GGImage
-plot1scatter <- ggplot(teamboxsummary,
-                    aes(x=avg_offrating, 
-                        y=avg_defrating)) +
-    #geom_point() +
-    geom_image(aes(image=image_path), size=0.075,) +
-    scale_y_reverse() +
+
+for (data_year in data_years) {
+    plot1scatter <- ggplot(teamvisdata %>%
+                               filter(season == data_year,
+                                      gametype=='Regular Season Game'),
+                           aes(x=gamedate,
+                               y=roll_offrating)) +
+        geom_line() +
+        geom_point(aes(color=twoleveloc)) +
+        geom_hline(aes(yintercept=avg_offrating)) +
+        theme_bw() +
+        facet_wrap(~team)
+    plot1scatter
+    ggsave(
+        filename=paste0('move_offrtg',data_year,'.png'),
+        plot=plot1scatter,
+        path='Images/ScatterPlots',
+        width=70, height=40, units='cm')
+}
+'
+    You could use an interactive plot that is faceted by team to determine how 
+teams are performing throughout the season, when compared to their previous 
+seasons. This would allow you to see whether a team my be on an upward 
+trend or not
+'
+
+plot2scatter <- ggplot(teamvisdata %>%
+                           filter(gametype=='Regular Season Game'),
+                       aes(x=gamedate,
+                           y=roll_three_par)) +
+    geom_point(aes(color=as.factor(season))) +
     theme_bw() +
-    facet_wrap(~season) +
-    labs(
-        title='Average Offensive vs. Defensive Rating (Facet by Seaon)',
-        x='Average Offensive Rating',
-        y='Average Defensive Rating')
-plot1scatter
+    facet_wrap(~team)
+plot2scatter
+ggsave(filename='3parchange.png',
+       plot=plot2scatter,
+       path='Images/ScatterPlots',
+       width=60, heigh=30, units='cm')

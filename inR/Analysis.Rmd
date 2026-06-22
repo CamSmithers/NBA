@@ -27,6 +27,8 @@ setwd('/Users/camsmithers/Desktop/Camalytics/NBA')
 source('inR/Functions.R')
 ```
 
+## Analysis Cleaning
+
 ### Data Sets
 
 Loading in the data sets that I'll need for analysis.
@@ -298,4 +300,32 @@ Export data as CSV files for Python dashboard.
 setwd('/Users/camsmithers/Desktop/Camalytics/NBA/dashboard')
 write_csv(team_box_scores_4, file='teamvisdata.csv')
 write_csv(team_box_summary, file='teamboxsummary.csv')
+```
+
+------------------------------------------------------------------------
+
+## Basic Data Dive
+
+```{r}
+
+```
+
+------------------------------------------------------------------------
+
+## Statistical Modeling
+
+```{r}
+library(tidyverse)
+library(rsample)
+library(caret)
+library(vip)
+library(ROCR)
+library(nnet)
+```
+
+### Data Sets
+
+```{r}
+setwd('/Users/camsmithers/Desktop/Camalytics/NBA')
+teamvisdata <- readRDS('Data-NBA/Current/teamvisdata.rds')
 ```

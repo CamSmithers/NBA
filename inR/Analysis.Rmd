@@ -13,11 +13,12 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ### Packages
 
-```{r}
+```{r message=FALSE, warning=FALSE}
 set.seed(157)
 library(tidyverse)
 library(glue)
 library(zoo)
+library(psych)
 ```
 
 ### Functions Script
@@ -257,6 +258,8 @@ pstsnbox <- team_box_scores_3 %>%
 fullsnbox <- rbind(regsnbox, pstsnbox)
 ```
 
+Using the rounding function across across various columns to clean up the rolling averages.
+
 ```{r}
 team_box_scores_4 <- team_box_scores_3 %>%
     left_join(fullsnbox, by = c('gamedate', 'team')) %>%
@@ -272,6 +275,8 @@ team_box_scores_4 <- team_box_scores_3 %>%
 ```
 
 ### Summary Data
+
+Adding a non-moving average for the data set, in the off chance I may want to use it for something.
 
 ```{r}
 team_box_summary <- team_box_scores_4 %>%
@@ -307,25 +312,65 @@ write_csv(team_box_summary, file='teamboxsummary.csv')
 ## Basic Data Dive
 
 ```{r}
-
-```
-
-------------------------------------------------------------------------
-
-## Statistical Modeling
-
-```{r}
-library(tidyverse)
-library(rsample)
-library(caret)
-library(vip)
-library(ROCR)
-library(nnet)
-```
-
-### Data Sets
-
-```{r}
 setwd('/Users/camsmithers/Desktop/Camalytics/NBA')
 teamvisdata <- readRDS('Data-NBA/Current/teamvisdata.rds')
+```
+
+Here I'm using the `describe` function from the psych package to generate a table with summary statistics.
+
+1.  N: Number of Observations
+2.  Mean: Average of the Obversations
+3.  SD: The Standard Deviation
+4.  Median: The Number in the Middle of the Observations
+5.  Trimmed: Mean Calculated Without Extreme Values
+6.  MAD: Mean Absolute Deviation
+7.  Min: Minimum Value
+8.  Max: Maximum Value
+9.  Range: Difference Between Max and Min
+10. Skew: Symmetry of the Data Set
+11. Kurtosis: Determine the Frequency of Outliers
+12. SE: Standard Error
+
+```{r}
+describe(teamvisdata)
+```
+
+Now let's create some basic plots to get a better understanding of our data set.
+
+```{r}
+hist1plot <- ggplot(data=teamvisdata,
+                    aes(x=fga)) +
+    geom_histogram(bins=30, color='black', fill='cornflowerblue') +
+    labs(
+        title='Distribution of Field Goal Attempts',
+        x='Field Goal Attempts',
+        y='Count') +
+    theme_bw() +
+    scale_x_continuous(breaks = seq(from = 60, to = 130, by = 5))
+hist1plot
+
+hist2plot <- ggplot(data=teamvisdata,
+                    aes(x=ast_pct)) +
+    geom_histogram(bins=30, color='black', fill='magenta3') +
+    labs(
+        title='Distribution of Shots Assisted On',
+        x='% of Shots Assisted On',
+        y='Count') +
+    theme_bw() +
+    scale_x_continuous(breaks = seq(from = 0, to = 100, by = 10))
+hist2plot
+```
+
+```{r}
+scat1plot <- ggplot(data=teamvisdata %>%
+                        filter(season==2023),
+                    aes(x=ts_pct,
+                        y=ftar)) +
+    geom_point(color='forestgreen') +
+    labs(
+        title='True Shooting % vs. Free Throw Attempt Rate',
+        x='True Shooting %',
+        y='Free Throw Attempt Rate') +
+    theme_classic()
+scat1plot
 ```

@@ -11,7 +11,7 @@ teamvisdata <- teamvisdata %>%
     left_join(teamboxsummary, by=c('team', 'season')) %>%
     left_join(imagedata, by=c('team'='abbreviation'))
 
-data_years <- unique(teamvisdata$season)
+data_years <- sort(unique(teamvisdata$season))
 
 for (data_year in data_years) {
     plot1bar <- ggplot(teamvisdata %>%

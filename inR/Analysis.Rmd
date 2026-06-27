@@ -19,11 +19,14 @@ library(tidyverse)
 library(glue)
 library(zoo)
 library(psych)
+library(ggridges)
+library(viridis)
+library(hrbrthemes)
 ```
 
 ### Functions Script
 
-```{r}
+```{r warning=FALSE}
 setwd('/Users/camsmithers/Desktop/Camalytics/NBA')
 source('inR/Functions.R')
 ```
@@ -311,9 +314,10 @@ write_csv(team_box_summary, file='teamboxsummary.csv')
 
 ## Basic Data Dive
 
-```{r}
+```{r warning=FALSE}
 setwd('/Users/camsmithers/Desktop/Camalytics/NBA')
 teamvisdata <- readRDS('Data-NBA/Current/teamvisdata.rds')
+teamboxsummary <- readRDS('Data-NBA/Current/teamboxsummary.rds')
 ```
 
 Here I'm using the `describe` function from the psych package to generate a table with summary statistics.
@@ -362,10 +366,25 @@ hist2plot
 ```
 
 ```{r}
-scat1plot <- ggplot(data=teamvisdata %>%
-                        filter(season==2023),
+box1plot <- ggplot(data=teamvisdata,
+                   aes(y=pts,
+                       fill=twoleveloc)) +
+    geom_boxplot() +
+    facet_wrap(~season) +
+    labs(
+        title='Points Scored Faceted By Year (2020 to 2026)',
+        x='Outcome of Game',
+        y='Points Scored',
+        fill='Game Outcome'
+    ) +
+    theme_bw()
+box1plot
+```
+
+```{r}
+scat1plot <- ggplot(data=teamvisdata,
                     aes(x=ts_pct,
-                        y=ftar)) +
+                        y=pts)) +
     geom_point(color='forestgreen') +
     labs(
         title='True Shooting % vs. Free Throw Attempt Rate',
@@ -373,4 +392,53 @@ scat1plot <- ggplot(data=teamvisdata %>%
         y='Free Throw Attempt Rate') +
     theme_classic()
 scat1plot
+```
+
+```{r}
+data_years <- sort(unique(teamvisdata$season))
+
+for (data_year in data_years) {
+    time1plot <- ggplot(data=teamvisdata %>%
+               filter(team=='PHI',
+                      season==data_year),
+           aes(x=gamedate,
+               y=defrating)) +
+#        geom_point() +
+        geom_line(color=data_year) +
+        theme_bw() +
+        scale_x_date(date_breaks='1 month', date_labels='%b') +
+        labs(
+            title=glue('{data_year} Game Defensive Rating'),
+            x='Game Dates',
+            y='Defensive Rating'
+        )
+    print(time1plot)
+}
+```
+
+```{r}
+data_years <- sort(unique(teamvisdata$season))
+
+for (data_year in data_years) {
+    lol1plot <- ggplot(data=teamboxsummary %>%
+               mutate(avg_netrating = 
+                          avg_offrating - avg_defrating) %>%
+               filter(season==data_year),
+           aes(x=team, y=avg_netrating)) +
+        geom_segment(aes(
+            x=team,
+            xend=team,
+            y=0,
+            yend=avg_netrating), color='black') +
+        theme_bw() +
+        geom_hline(yintercept=0) +
+        theme(axis.text.x = element_text(angle = 90)) +
+        geom_point(color=data_year) +
+        labs(
+            title=glue('{data_year} Average Net Rating By Team'),
+            x='Team Name',
+            y='Average Net Rating'
+        )
+    print(lol1plot)
+}
 ```

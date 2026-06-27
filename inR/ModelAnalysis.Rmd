@@ -32,7 +32,7 @@ teamvisdata_fixed <- na.omit(teamvisdata) %>%
         season = as.factor(season))
 ```
 
-## Linear Regression Model Testing: Player Statistics 
+## Linear Regression Model Testing: Player Statistics
 
 ------------------------------------------------------------------------
 

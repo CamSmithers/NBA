@@ -341,23 +341,25 @@ describe(teamvisdata)
 
 Now let's create some basic plots to get a better understanding of our data set.
 
+1.  Distribution of Field Goal Attempts
+2.  Distribution of % of Shots Assisted On
+
 ```{r}
 hist1plot <- ggplot(data=teamvisdata,
                     aes(x=fga)) +
-    geom_histogram(bins=30, color='black', fill='cornflowerblue') +
+    geom_histogram(bins=20, color='black', fill='cornflowerblue') +
     labs(
         title='Distribution of Field Goal Attempts',
         x='Field Goal Attempts',
         y='Count') +
-    theme_bw() +
-    scale_x_continuous(breaks = seq(from = 60, to = 130, by = 5))
+    theme_bw()
 hist1plot
 
 hist2plot <- ggplot(data=teamvisdata,
                     aes(x=ast_pct)) +
     geom_histogram(bins=30, color='black', fill='magenta3') +
     labs(
-        title='Distribution of Shots Assisted On',
+        title='Distribution of % Shots Assisted On',
         x='% of Shots Assisted On',
         y='Count') +
     theme_bw() +
@@ -365,34 +367,41 @@ hist2plot <- ggplot(data=teamvisdata,
 hist2plot
 ```
 
+Let's look at true shooting percentage based on the outcome of the game (win or loss with magnitude). Let's also facet it by year so we can observe any year to year trends.
+
 ```{r}
 box1plot <- ggplot(data=teamvisdata,
-                   aes(y=pts,
-                       fill=twoleveloc)) +
+                   aes(y=ts_pct,
+                       fill=fourleveloc)) +
     geom_boxplot() +
     facet_wrap(~season) +
     labs(
-        title='Points Scored Faceted By Year (2020 to 2026)',
+        title='True Shooting % Faceted by Year',
         x='Outcome of Game',
         y='Points Scored',
-        fill='Game Outcome'
-    ) +
-    theme_bw()
+        fill='Game Outcome') +
+    theme_bw() +
+    theme(axis.text.x = element_blank(), axis.ticks.x = element_blank())
 box1plot
 ```
 
+I want to look at the relationship between how well teams shoot the ball and how many points they score. I believe there would be a positive relationship between the two, but let's create a plot to double check. Let's also add a regression line with standard error.
+
 ```{r}
 scat1plot <- ggplot(data=teamvisdata,
-                    aes(x=ts_pct,
-                        y=pts)) +
+                    aes(x=pts,
+                        y=efg_pct)) +
     geom_point(color='forestgreen') +
     labs(
-        title='True Shooting % vs. Free Throw Attempt Rate',
-        x='True Shooting %',
-        y='Free Throw Attempt Rate') +
-    theme_classic()
+        title='Points Scored vs. Effective Field Goal %',
+        x='Points Scored',
+        y='Effective Field Goal %') +
+    theme_classic() +
+    geom_smooth(method='lm', color='black', se=TRUE)
 scat1plot
 ```
+
+I want to take a look at my favorite team the Philadelphia 76ers, to see how they have performed on the defensive side of the ball over the past few years throughout their seasons.
 
 ```{r}
 data_years <- sort(unique(teamvisdata$season))
@@ -400,21 +409,28 @@ data_years <- sort(unique(teamvisdata$season))
 for (data_year in data_years) {
     time1plot <- ggplot(data=teamvisdata %>%
                filter(team=='PHI',
-                      season==data_year),
+                      season==data_year,
+                      gametype=='Regular Season Game'),
            aes(x=gamedate,
-               y=defrating)) +
+               y=roll_defrating)) +
 #        geom_point() +
         geom_line(color=data_year) +
         theme_bw() +
         scale_x_date(date_breaks='1 month', date_labels='%b') +
         labs(
-            title=glue('{data_year} Game Defensive Rating'),
+            title=glue('{data_year} Defensive Rating (Moving Average (n=10))'),
             x='Game Dates',
             y='Defensive Rating'
         )
     print(time1plot)
 }
 ```
+
+Let's create a lollipop chart to look at teams average net rating for each season in the data set.
+
+- Net Rating = Offensive Rating - Defensive Rating
+
+  - Rating: Looks at how many points a teams scores or allows per 100 possessions. This allows to compare teams between games that may have had significantly different paces of play.
 
 ```{r}
 data_years <- sort(unique(teamvisdata$season))

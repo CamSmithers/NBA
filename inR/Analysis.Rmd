@@ -22,6 +22,7 @@ library(psych)
 library(ggridges)
 library(viridis)
 library(hrbrthemes)
+library(nnet)
 ```
 
 ### Functions Script
@@ -30,6 +31,8 @@ library(hrbrthemes)
 setwd('/Users/camsmithers/Desktop/Camalytics/NBA')
 source('inR/Functions.R')
 ```
+
+------------------------------------------------------------------------
 
 ## Analysis Cleaning
 
@@ -318,6 +321,7 @@ write_csv(team_box_summary, file='teamboxsummary.csv')
 setwd('/Users/camsmithers/Desktop/Camalytics/NBA')
 teamvisdata <- readRDS('Data-NBA/Current/teamvisdata.rds')
 teamboxsummary <- readRDS('Data-NBA/Current/teamboxsummary.rds')
+data_years <- sort(unique(teamvisdata$season))
 ```
 
 Here I'm using the `describe` function from the psych package to generate a table with summary statistics.
@@ -404,8 +408,6 @@ scat1plot
 I want to take a look at my favorite team the Philadelphia 76ers, to see how they have performed on the defensive side of the ball over the past few years throughout their seasons.
 
 ```{r}
-data_years <- sort(unique(teamvisdata$season))
-
 for (data_year in data_years) {
     time1plot <- ggplot(data=teamvisdata %>%
                filter(team=='PHI',
@@ -457,4 +459,45 @@ for (data_year in data_years) {
         )
     print(lol1plot)
 }
+```
+
+------------------------------------------------------------------------
+
+## Advanced Data Dive
+
+Here I'm going to load in the data we've been working with and do some slight cleaning up of our variables prior to running some regression models.
+
+```{r warning=FALSE}
+setwd('/Users/camsmithers/Desktop/Camalytics/NBA')
+teamvisdata <- readRDS('Data-NBA/Current/teamvisdata.rds') %>%
+    na.omit() %>%
+    mutate(team = as.factor(team),
+           opponent = as.factor(opponent),
+           season = as.factor(season)) %>%
+    arrange(gamedate)
+teamboxsummary <- readRDS('Data-NBA/Current/teamboxsummary.rds')
+data_years <- sort(unique(teamvisdata$season))
+```
+
+Let's run the model that was the best performing during cross validation. Then let's add the predicted values from the model to our data set to use in some visualizations.
+
+```{r}
+winbinary1 <- glm(twoleveloc ~ roll_offrating + roll_defrating + team +
+                      homeaway + vorp_bpa + roll_three_par + roll_ftar +
+                      roll_ast_pct,
+                  data=teamvisdata, family='binomial')
+
+winbinary1_summary <- summary(winbinary1)
+
+winbinary1_fitted <- fitted(winbinary1)
+
+winbinary1_approx <- predict(winbinary1, newdata=teamvisdata, type='response')
+
+teamvisdata2 <- cbind(teamvisdata, winbinary1_approx) %>%
+    mutate(winbinary1_approx = round(100 * winbinary1_approx, 1))
+```
+
+```{r}
+testmodel <- multinom(fourleveloc ~ 1, data = teamvisdata)
+summary(testmodel)
 ```

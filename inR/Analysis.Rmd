@@ -27,6 +27,7 @@ library(ROCR)
 library(vip)
 library(caret)
 library(rsample)
+library(rstatix)
 ```
 
 ### Functions Script
@@ -575,4 +576,53 @@ legend(0.6, 0.3, legend=c('Full Model',
                           'Defensive Rating w/ Team'),
        col=c('cornflowerblue', 'magenta2', 'gold2', 'forestgreen'),
        lty=2:1, cex=0.6)
+```
+
+### Post-Model Training
+
+After using machine learning to test models and determine which one performs the best, I'm going to look a bit further into the predictions that the model got wrong to better improve the model.
+
+```{r}
+setwd('/Users/camsmithers/Desktop/Camalytics/NBA')
+teamvisdata <- readRDS('Data-NBA/Current/teamvisdata.rds')
+teamvisdata_fixed <- na.omit(teamvisdata) %>%
+    mutate(
+        team = as.factor(team),
+        opponent = as.factor(opponent),
+        season = as.factor(season))
+
+bestbinary_win <- glm(twoleveloc ~ roll_offrating + roll_defrating + team + homeaway + 
+                          vorp_bpa + roll_three_par + roll_ftar + roll_ast_pct,
+                      data=teamvisdata_fixed, family='binomial')
+bestbinary_fitted <- fitted(bestbinary_win)
+bestbinary_predict <- predict(bestbinary_win, newdata=teamvisdata_fixed, type='response')
+teamvisdata_fixed <- cbind(teamvisdata_fixed, bestbinary_predict)
+teamvisdata_fixed <- teamvisdata_fixed %>%
+    mutate(
+        bestbinary_predict = round(bestbinary_predict),
+           bestbinary_predict = factor(
+               bestbinary_predict,
+               levels = c(0, 1),
+               labels = c('Loss', 'Win'))) %>%
+    mutate(
+        modelcheck = case_when(
+            twoleveloc == bestbinary_predict ~ 'Correct',
+            twoleveloc != bestbinary_predict ~ 'Incorrect',
+            TRUE ~ NA))
+```
+
+#### Statistics to Investigate
+
+I'm going to use T-test to better understand which variables are causing the model to have issues.
+
+|  |  |  |
+|:---------------------:|:----------------------:|:------------------------:|
+| **Assists (8.06 x 10^-5^)** | **True Shooting % (1.14 x 10^-4^)** | Offensive Rebounds (1.79 x 10^-3^) |
+| Player Efficiency (0.67) | **3PT Attempts (0.02)** | **Offensive Rating (0.01)** |
+| Value Over Replacement (0.07) | **Free Throw Attempts (0.05)** | Defensive Rating (0.16) |
+| Win Shares (0.75) | Total Rebound % (0.57) | 3PT Shooting (0.09) |
+| **Turnover % (0.03)** | **Personal Fouls (4.41 x 10^-3^)** | **Field Goal % (1.36 x 10^-3^)** |
+
+```{r}
+t.test(fg_pct ~ modelcheck, data=teamvisdata_fixed)
 ```

@@ -32,8 +32,6 @@ teamvisdata_fixed <- na.omit(teamvisdata) %>%
         season = as.factor(season))
 ```
 
-## Linear Regression Model Testing: Player Statistics
-
 ------------------------------------------------------------------------
 
 ## Logistic Regression Model Testing: Binary Game Outcome
@@ -120,40 +118,4 @@ legend(0.6, 0.3, legend=c('Full Model',
                          'Defensive Rating w/ Team'),
        col=c('cornflowerblue', 'magenta2', 'gold2', 'forestgreen'),
        lty=2:1, cex=0.6)
-```
-
-------------------------------------------------------------------------
-
-## Multinomial Regression Testing: Outcome w/ Magnitude
-
-```{r}
-wincat_split <- initial_split(teamvisdata_fixed, prop=0.75, strata = 'fourleveloc')
-wincat_train <- training(wincat_split)
-wincat_test <- testing(wincat_split)
-```
-
-```{r}
-wincat_1 <- train(
-    fourleveloc ~ roll_offrating + roll_defrating + team + homeaway + 
-        vorp_bpa + roll_three_par + roll_ftar + roll_ast_pct,
-    data=teamvisdata_fixed,
-    method='multinom',
-    trace=FALSE)
-
-wincat_2 <- train(
-    fourleveloc ~ homeaway,
-    data=teamvisdata_fixed,
-    method='multinom',
-    trace=FALSE)
-```
-
-```{r}
-summary(
-    resamples(
-        list(
-            model1=wincat_1,
-            model2=wincat_2
-        )
-    )
-)$statistics$Accuracy
 ```

@@ -23,6 +23,10 @@ library(ggridges)
 library(viridis)
 library(hrbrthemes)
 library(nnet)
+library(ROCR)
+library(vip)
+library(caret)
+library(rsample)
 ```
 
 ### Functions Script
@@ -315,7 +319,7 @@ write_csv(team_box_summary, file='teamboxsummary.csv')
 
 ------------------------------------------------------------------------
 
-## Basic Data Dive
+## Data Dive
 
 ```{r warning=FALSE}
 setwd('/Users/camsmithers/Desktop/Camalytics/NBA')
@@ -323,6 +327,8 @@ teamvisdata <- readRDS('Data-NBA/Current/teamvisdata.rds')
 teamboxsummary <- readRDS('Data-NBA/Current/teamboxsummary.rds')
 data_years <- sort(unique(teamvisdata$season))
 ```
+
+### Summary Statistics
 
 Here I'm using the `describe` function from the psych package to generate a table with summary statistics.
 
@@ -342,6 +348,10 @@ Here I'm using the `describe` function from the psych package to generate a tabl
 ```{r}
 describe(teamvisdata)
 ```
+
+### Graphs & Plots
+
+#### Histograms
 
 Now let's create some basic plots to get a better understanding of our data set.
 
@@ -371,6 +381,8 @@ hist2plot <- ggplot(data=teamvisdata,
 hist2plot
 ```
 
+#### Boxplots
+
 Let's look at true shooting percentage based on the outcome of the game (win or loss with magnitude). Let's also facet it by year so we can observe any year to year trends.
 
 ```{r}
@@ -389,6 +401,8 @@ box1plot <- ggplot(data=teamvisdata,
 box1plot
 ```
 
+#### Scatterplots
+
 I want to look at the relationship between how well teams shoot the ball and how many points they score. I believe there would be a positive relationship between the two, but let's create a plot to double check. Let's also add a regression line with standard error.
 
 ```{r}
@@ -404,6 +418,8 @@ scat1plot <- ggplot(data=teamvisdata,
     geom_smooth(method='lm', color='black', se=TRUE)
 scat1plot
 ```
+
+#### Time Plot
 
 I want to take a look at my favorite team the Philadelphia 76ers, to see how they have performed on the defensive side of the ball over the past few years throughout their seasons.
 
@@ -427,6 +443,8 @@ for (data_year in data_years) {
     print(time1plot)
 }
 ```
+
+#### Lollipop Chart
 
 Let's create a lollipop chart to look at teams average net rating for each season in the data set.
 
@@ -463,41 +481,98 @@ for (data_year in data_years) {
 
 ------------------------------------------------------------------------
 
-## Advanced Data Dive
+## Logistic Regression Model Testing: Binary Game Outcome
 
-Here I'm going to load in the data we've been working with and do some slight cleaning up of our variables prior to running some regression models.
-
-```{r warning=FALSE}
+```{r}
 setwd('/Users/camsmithers/Desktop/Camalytics/NBA')
-teamvisdata <- readRDS('Data-NBA/Current/teamvisdata.rds') %>%
-    na.omit() %>%
-    mutate(team = as.factor(team),
-           opponent = as.factor(opponent),
-           season = as.factor(season)) %>%
-    arrange(gamedate)
-teamboxsummary <- readRDS('Data-NBA/Current/teamboxsummary.rds')
-data_years <- sort(unique(teamvisdata$season))
-```
-
-Let's run the model that was the best performing during cross validation. Then let's add the predicted values from the model to our data set to use in some visualizations.
-
-```{r}
-winbinary1 <- glm(twoleveloc ~ roll_offrating + roll_defrating + team +
-                      homeaway + vorp_bpa + roll_three_par + roll_ftar +
-                      roll_ast_pct,
-                  data=teamvisdata, family='binomial')
-
-winbinary1_summary <- summary(winbinary1)
-
-winbinary1_fitted <- fitted(winbinary1)
-
-winbinary1_approx <- predict(winbinary1, newdata=teamvisdata, type='response')
-
-teamvisdata2 <- cbind(teamvisdata, winbinary1_approx) %>%
-    mutate(winbinary1_approx = round(100 * winbinary1_approx, 1))
+teamvisdata <- readRDS('Data-NBA/Current/teamvisdata.rds')
+teamvisdata_fixed <- na.omit(teamvisdata) %>%
+    mutate(
+        team = as.factor(team),
+        opponent = as.factor(opponent),
+        season = as.factor(season))
 ```
 
 ```{r}
-testmodel <- multinom(fourleveloc ~ 1, data = teamvisdata)
-summary(testmodel)
+winbinary_split <- initial_split(teamvisdata_fixed, prop=.75, strata='twoleveloc')
+winbinary_train <- training(winbinary_split)
+winbinary_test <- testing(winbinary_split)
+```
+
+For the models I started by adding all the variables that I wanted and deciding which ones I wanted to remove to see how the accuracy changes.
+
+```{r}
+winbinary_1 <- train(
+    twoleveloc ~ roll_offrating + roll_defrating + team + homeaway + 
+        vorp_bpa + roll_three_par + roll_ftar + roll_ast_pct,
+    data=teamvisdata_fixed,
+    method='glm',
+    family='binomial',
+    trControl=trainControl(method='cv', number=10))
+winbinary_2 <- train(
+    twoleveloc ~ roll_offrating + roll_defrating,
+    data=teamvisdata_fixed,
+    method='glm',
+    family='binomial',
+    trControl=trainControl(method='cv', number=10))
+winbinary_3 <- train(
+    twoleveloc ~ roll_offrating + opponent,
+    data=teamvisdata_fixed,
+    method='glm',
+    family='binomial',
+    trControl=trainControl(method='cv', number=10))
+winbinary_4 <- train(
+    twoleveloc ~ homeaway,
+    data=teamvisdata_fixed,
+    method='glm',
+    family='binomial',
+    trControl=trainControl(method='cv', number=10))
+```
+
+This will give the me summary statistics of the models' accuracy.
+
+```{r}
+summary(
+    resamples(
+        list(
+            model1=winbinary_1,
+            model2=winbinary_2,
+            model3=winbinary_3,
+            model4=winbinary_4
+        )
+    )
+)$statistics$Accuracy
+```
+
+### ROC Curve for Logistic Regression Models
+
+Creating a plot to show the False Positive vs. True Positive Accuracy.
+
+```{r}
+model1_prob <- predict(winbinary_1, winbinary_train, type='prob')$Win
+perf1 <- prediction(model1_prob, winbinary_train$twoleveloc) %>%
+    performance(measure='tpr', x.measure='fpr')
+
+model2_prob <- predict(winbinary_2, winbinary_train, type='prob')$Win
+perf2 <- prediction(model2_prob, winbinary_train$twoleveloc) %>%
+    performance(measure='tpr', x.measure='fpr')
+
+model3_prob <- predict(winbinary_3, winbinary_train, type='prob')$Win
+perf3 <- prediction(model3_prob, winbinary_train$twoleveloc) %>%
+    performance(measure='tpr', x.measure='fpr')
+
+model4_prob <- predict(winbinary_4, winbinary_train, type='prob')$Win
+perf4 <- prediction(model4_prob, winbinary_train$twoleveloc) %>%
+    performance(measure='tpr', x.measure='fpr')
+
+plot(perf1, col='cornflowerblue', lty=1)
+plot(perf2, add=TRUE, col='magenta2', lty=2)
+plot(perf3, add=TRUE, col='gold2', lty=2)
+plot(perf4, add=TRUE, col='forestgreen', lty=2)
+legend(0.6, 0.3, legend=c('Full Model',
+                          'Net Rating',
+                          'Offensive Rating w/ Opponent',
+                          'Defensive Rating w/ Team'),
+       col=c('cornflowerblue', 'magenta2', 'gold2', 'forestgreen'),
+       lty=2:1, cex=0.6)
 ```

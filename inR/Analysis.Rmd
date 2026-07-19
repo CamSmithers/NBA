@@ -229,6 +229,8 @@ team_box_scores_3 <- team_box_scores_2 %>%
             TRUE ~ 'Regular Season Game'))
 ```
 
+#### Rolling Statistics
+
 Here I'm going to create some variables that will be used as possible predictors when testing regression models. There are great variables to work with in the data set so far; however, I want to create some rolling averages so I can measure how teams are doing across seasons and within a certain window.
 
 ```{r}
@@ -247,7 +249,12 @@ regsnbox <- team_box_scores_3 %>%
         roll_offrating = rollmean(offrating, k=10, fill=NA, align='left'),
         roll_defrating = rollmean(defrating, k=10, fill=NA, align='left'),
         roll_opp_pts = rollmean(opp_pts, k=10, fill=NA, align='left'),
-        roll_ptsdiff = rollmean(ptsdiff, k=10, fill=NA, align='left')) %>%
+        roll_ptsdiff = rollmean(ptsdiff, k=10, fill=NA, align='left'),
+        #Predictors for Linear Regression
+        roll_ast = rollmean(ast, k=10, fill=NA, align='left'),
+        roll_ts_pct = rollmean(ts_pct, k=10, fill=NA, align='left'),
+        roll_pf = rollmean(pf, k=10, fill=NA, align='left'),
+        roll_tov = rollmean(tov, k=10, fill=NA, align='left')) %>%
     select(gamedate, team, starts_with('roll_'))
 pstsnbox <- team_box_scores_3 %>%
     filter(gametype == 'Playoff Game') %>%
@@ -264,7 +271,12 @@ pstsnbox <- team_box_scores_3 %>%
         roll_offrating = rollmean(offrating, k=3, fill=NA, align='left'),
         roll_defrating = rollmean(defrating, k=3, fill=NA, align='left'),
         roll_opp_pts = rollmean(opp_pts, k=3, fill=NA, align='left'),
-        roll_ptsdiff = rollmean(ptsdiff, k=3, fill=NA, align='left')) %>%
+        roll_ptsdiff = rollmean(ptsdiff, k=3, fill=NA, align='left'),
+        #Predictors for Linear Regression
+        roll_ast = rollmean(ast, k=3, fill=NA, align='left'),
+        roll_ts_pct = rollmean(ts_pct, k=3, fill=NA, align='left'),
+        roll_pf = rollmean(pf, k=3, fill=NA, align='left'),
+        roll_tov = rollmean(tov, k=10, fill=NA, align='left')) %>%
     select(gamedate, team, starts_with('roll_'))
 fullsnbox <- rbind(regsnbox, pstsnbox)
 ```
@@ -456,28 +468,25 @@ Let's create a lollipop chart to look at teams average net rating for each seaso
 ```{r}
 data_years <- sort(unique(teamvisdata$season))
 
-for (data_year in data_years) {
-    lol1plot <- ggplot(data=teamboxsummary %>%
-               mutate(avg_netrating = 
-                          avg_offrating - avg_defrating) %>%
-               filter(season==data_year),
-           aes(x=team, y=avg_netrating)) +
-        geom_segment(aes(
-            x=team,
-            xend=team,
-            y=0,
-            yend=avg_netrating), color='black') +
-        theme_bw() +
-        geom_hline(yintercept=0) +
-        theme(axis.text.x = element_text(angle = 90)) +
-        geom_point(color=data_year) +
-        labs(
-            title=glue('{data_year} Average Net Rating By Team'),
-            x='Team Name',
-            y='Average Net Rating'
-        )
-    print(lol1plot)
-}
+
+lol1plot <- ggplot(data=teamboxsummary %>%
+                       mutate(avg_netrating = 
+                                  avg_offrating - avg_defrating),
+                   aes(x=team, y=avg_netrating, color=as.factor(season))) +
+    geom_segment(
+        aes(x=team, xend=team,
+            y=0,yend=avg_netrating), color='black') +
+    theme_bw() +
+    geom_hline(yintercept=0) +
+    theme(axis.text.x = element_text(angle = 90)) +
+    geom_point() +
+    facet_wrap(~season) +
+    labs(
+        title='Average Net Rating w/ Facet by Year',
+        x='Team',
+        y='Average Net Rating',
+        color='Year')
+print(lol1plot)
 ```
 
 ------------------------------------------------------------------------
@@ -615,14 +624,60 @@ teamvisdata_fixed <- teamvisdata_fixed %>%
 
 I'm going to use T-test to better understand which variables are causing the model to have issues.
 
-|  |  |  |
-|:---------------------:|:----------------------:|:------------------------:|
-| **Assists (8.06 x 10^-5^)** | **True Shooting % (1.14 x 10^-4^)** | Offensive Rebounds (1.79 x 10^-3^) |
-| Player Efficiency (0.67) | **3PT Attempts (0.02)** | **Offensive Rating (0.01)** |
-| Value Over Replacement (0.07) | **Free Throw Attempts (0.05)** | Defensive Rating (0.16) |
-| Win Shares (0.75) | Total Rebound % (0.57) | 3PT Shooting (0.09) |
-| **Turnover % (0.03)** | **Personal Fouls (4.41 x 10^-3^)** | **Field Goal % (1.36 x 10^-3^)** |
+- **Assists: 8.06 \* 10^-5^**
+
+- Turnover %: 3 \* 10-2
+
+- **True Shooting %: 1.14 \* 10^-4^**
+
+- 3PT Attempts: 2 \* 10^-2^
+
+- **Personal Fouls: 4.41 \* 10^-3^**
+
+- Offensive Rating: 1 \* 10^-2^
+
+- Field Goal %:1.36 \* 10^-3^
 
 ```{r}
 t.test(fg_pct ~ modelcheck, data=teamvisdata_fixed)
+```
+
+### Linear Regression Testing for Game Statistics
+
+So one of the problems with predicting the outcome of these games is that we don't know what will happen during the game until it's over. For instance, if I know a team is going to shoot 65% from 3PT and their opponent is going to have a season high in turnovers; I would always pick them to win that game regardless of who that is. I can attempt to estimate these statistics and see if they can help increase model accuracy.
+
+There are various statistics that I've identified through a two-sided t-test that are significantly different in games that the model incorrectly predicted. I'm only going to focus on predicting those with the lowest p-values.
+
+Note: Field Goal % is lower than Personal Fouls; however, True Shooting % takes Field Goal % into account when calculated along with additional shooting statistics.
+
+- **Assists: 8.06 \* 10^-5^**
+
+- **True Shooting %: 1.14 \* 10^-4^**
+
+- **Personal Fouls: 4.41 \* 10^-3^**
+
+```{r}
+#Assist Model
+ast_model <- lm(ast ~ roll_ast, data=teamvisdata_fixed)
+ast_fitted <- fitted(ast_model)
+ast_predict <- predict(ast_model, newdata=teamvisdata_fixed)
+teamvisdata_fixed <- cbind(teamvisdata_fixed, ast_predict)
+
+#True Shooting %
+ts_pct_model <- lm(ts_pct ~ roll_ts_pct, data=teamvisdata_fixed)
+ts_pct_fitted <- fitted(ts_pct_model)
+ts_pct_predict <- predict(ts_pct_model, newdata=teamvisdata_fixed)
+teamvisdata_fixed <- cbind(teamvisdata_fixed, ts_pct_predict)
+
+#Personal Fouls
+pf_model <- lm(pf ~ roll_pf, data=teamvisdata_fixed)
+pf_fitted <- fitted(pf_model)
+pf_predict <- predict(pf_model, newdata=teamvisdata_fixed)
+teamvisdata_fixed <- cbind(teamvisdata_fixed, pf_predict)
+
+teamvisdata_fixed <- teamvisdata_fixed %>%
+    mutate(
+        ast_predict = round(ast_predict, 1),
+        ts_pct_predict = round(ts_pct_predict, 3),
+        pf_predict = round(pf_predict, 1))
 ```

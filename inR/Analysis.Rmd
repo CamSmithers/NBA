@@ -687,7 +687,7 @@ binarycheck1 <- train(
 vip(binarycheck1, num_features=15)
 ```
 
-Above we have a graph that displays the top 15 influential variables when trying to estimate when the original model will be wrong. Of these variables many of them are directly related to the outcome of the game (which we are trying to predict), so we can ignore those. I would like to focus on `per_bpa` and `vorp_bpa`, these variables indicate whether the best player on a team (by a specific metric) will not play during that game. If we wanted to use this model to pick the winner of a game where a team is missing their player with the highest PER (Player Efficiency Rating) or VORP (Value Over Replacement Player), we have two options.
+Above we have a graph that displays the top 15 influential variables when trying to estimate when the original model will be wrong. Of these variables many of them are directly related to the outcome of the game (which we are trying to predict) or we won't know until the game is over, so we can ignore those. I would like to focus on `per_bpa` and `vorp_bpa`, these variables indicate whether the best player on a team (by a specific metric) will not play during that game. If we wanted to use this model to pick the winner of a game where a team is missing their player with the highest PER (Player Efficiency Rating) or VORP (Value Over Replacement Player), we have two options.
 
 1.  We can pass on predicting that game entirely.
     - This method allows us to focus on games where we are confident in our predictions and not worry about where our parlay may cash.

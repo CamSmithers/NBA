@@ -6,7 +6,7 @@ Running Shiny in Browser
   * The `--reload` flag enables automatic reloading. When you save changes to your source files, the app will automatically restart and update in the browser.
   * The `--launch-browser` flag opens the app in a browser as soon as it starts.
 
-## R Programming
+## R
 Checking for Observations in Another Dataframe Using Multiple Columns
 * I'm trying to code an outcome variable that determines whether a team won or lost based on their best player's availability. I'm trying to use this variable to determine whether the best player missing a game has a statistically significant impact on its outcome.
 * An issue I was having was using `%in%` to check if dates and player names were in another data set. The main issue with this is that it checks one by one not simultaneously. For instance the date could be there for another player while the player name I need is in there, which would create a false positive.

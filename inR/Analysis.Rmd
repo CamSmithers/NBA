@@ -639,22 +639,12 @@ I'm going to use T-test to better understand which variables are causing the mod
 - Field Goal %:1.36 \* 10^-3^
 
 ```{r}
-t.test(fg_pct ~ modelcheck, data=teamvisdata_fixed)
+t.test(ts_pct ~ modelcheck, data=teamvisdata_fixed)
 ```
 
-### Linear Regression Testing for Game Statistics
+### Predicting the Unpredictable
 
-So one of the problems with predicting the outcome of these games is that we don't know what will happen during the game until it's over. For instance, if I know a team is going to shoot 65% from 3PT and their opponent is going to have a season high in turnovers; I would always pick them to win that game regardless of who that is. I can attempt to estimate these statistics and see if they can help increase model accuracy.
-
-There are various statistics that I've identified through a two-sided t-test that are significantly different in games that the model incorrectly predicted. I'm only going to focus on predicting those with the lowest p-values.
-
-Note: Field Goal % is lower than Personal Fouls; however, True Shooting % takes Field Goal % into account when calculated along with additional shooting statistics.
-
-- **Assists: 8.06 \* 10^-5^**
-
-- **True Shooting %: 1.14 \* 10^-4^**
-
-- **Personal Fouls: 4.41 \* 10^-3^**
+Now that we are aware of some of the statistics that our model is having issues with, let's think how we can identify games that it would have problems with.
 
 ```{r}
 #Assist Model
@@ -680,4 +670,26 @@ teamvisdata_fixed <- teamvisdata_fixed %>%
         ast_predict = round(ast_predict, 1),
         ts_pct_predict = round(ts_pct_predict, 3),
         pf_predict = round(pf_predict, 1))
+
+teamvisdata_fixed <- na.omit(teamvisdata_fixed)
+
+binarycheck_split <- initial_split(teamvisdata_fixed, prop=.75, strata='modelcheck')
+binarycheck_train <- training(binarycheck_split)
+binarycheck_test <- testing(binarycheck_split)
+
+binarycheck1 <- train(
+    modelcheck ~ .,
+    data=teamvisdata_fixed,
+    method='glm',
+    family='binomial',
+    trControl=trainControl(method='cv', number=10))
+
+vip(binarycheck1, num_features=15)
 ```
+
+Above we have a graph that displays the top 15 influential variables when trying to estimate when the original model will be wrong. Of these variables many of them are directly related to the outcome of the game (which we are trying to predict), so we can ignore those. I would like to focus on `per_bpa` and `vorp_bpa`, these variables indicate whether the best player on a team (by a specific metric) will not play during that game. If we wanted to use this model to pick the winner of a game where a team is missing their player with the highest PER (Player Efficiency Rating) or VORP (Value Over Replacement Player), we have two options.
+
+1.  We can pass on predicting that game entirely.
+    - This method allows us to focus on games where we are confident in our predictions and not worry about where our parlay may cash.
+2.  Determine how each team performs without that specific player, then adjust our prediction from there.
+    - This method would require us to develop more statistical models, specifically those that are focused on a specific team in a specific situation. I few this method as advantageous only if you are **only** focused on the outcomes of a specific team.
